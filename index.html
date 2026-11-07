@@ -1,0 +1,852 @@
+<!doctype html>
+<html lang="en" data-free-only="true"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0a0a0d"><meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="OVA ATLAS">
+<meta name="application-name" content="OVA ATLAS">
+<meta name="description" content="Private, offline-capable masked color preview studio. No cloud image generation or uploads.">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" sizes="180x180" href="./icons/atlas-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="./icons/atlas-192.png">
+<title>OVA ATLAS — Studio v8.4</title>
+<style>
+:root{--bg:#0a0a0d;--panel:#131319;--panel2:#1c1b24;--white:#f6f2f3;--muted:#99949f;--line:#34313a;--pink:#ff6e95;--pink2:#ca3e68;--safe:max(env(safe-area-inset-bottom),12px)}*{box-sizing:border-box}html{background:var(--bg);color:var(--white);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,sans-serif;font-size:16px}body{margin:0;min-height:100dvh;background:var(--bg)}button,input,textarea{font:inherit}button{cursor:pointer;color:inherit}button:disabled{opacity:.36;cursor:not-allowed}button:focus-visible,a:focus-visible{outline:2px solid var(--pink);outline-offset:3px}.app{max-width:1100px;margin:auto}.topbar{height:74px;padding:15px 22px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #27252b}.logotype{display:flex;gap:13px;align-items:center}.mark{font-size:29px;font-weight:900;letter-spacing:-.11em;line-height:1}.mark span{color:var(--pink)}.submark{font-size:10px;letter-spacing:.22em;font-weight:750;color:#bbb3be}.submark em{font-style:normal;color:var(--pink)}.toplinks{display:flex;align-items:center;gap:9px;color:var(--muted);letter-spacing:.14em;font-size:9px;font-weight:700}.statusdot{width:7px;height:7px;background:var(--pink);border-radius:50%}.roundicon{background:none;border:1px solid var(--line);height:32px;width:32px;border-radius:50%;margin-left:6px}.screen{padding:29px 22px 110px}.sectiontop,.resulthead{display:flex;align-items:flex-end;justify-content:space-between;gap:15px;margin-bottom:22px}.eyebrow{font-size:10px;letter-spacing:.22em;color:var(--pink);font-weight:760}.eyebrow .count{color:#68636d;padding-left:9px}h1{font-weight:780;font-size:clamp(31px,5vw,45px);letter-spacing:-.055em;line-height:1.05;margin:11px 0 0}h2{font-size:30px;letter-spacing:-.05em;margin:8px 0 0}.period{color:var(--pink)}.subtlebtn,.pillmini{background:#27232b;border:1px solid #403942;padding:10px 13px;color:#f6ecf0;font-size:12px;font-weight:650;border-radius:12px}.canvas-shell{background:radial-gradient(ellipse at 55% 35%,#252029,#0f0e14 70%);border:1px solid #2b2931;border-radius:19px;height:clamp(350px,54vh,640px);position:relative;overflow:hidden;touch-action:none;user-select:none}.intro{height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;padding:32px;text-align:center}.intrographic{font-size:42px;color:var(--pink);background:#35232f;border:1px solid #654252;width:85px;height:85px;display:grid;place-items:center;border-radius:26px;margin-bottom:17px}.introtitle{font-size:24px;font-weight:750;letter-spacing:-.035em}.introsub{font-size:13px;max-width:240px;color:#a7a1ac;line-height:1.55;margin-top:9px;margin-bottom:20px}.hint{color:#69656d;font-size:10px;margin-top:15px}.primary{border:0;border-radius:13px;background:var(--pink);color:#260c16;font-size:13px;font-weight:800;padding:15px 19px;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:14px}.primary:hover{background:#ff8cad}.upload span{font-size:19px}.transform{position:absolute;top:0;left:0;transform-origin:0 0;will-change:transform}.transform img{display:block;pointer-events:none;user-select:none}.transform canvas{position:absolute;inset:0;pointer-events:none}.stage-top,.stage-bottom{pointer-events:none;position:absolute;left:14px;right:14px;z-index:4;display:flex;justify-content:space-between;align-items:center}.stage-top{top:14px}.stage-top button,.zoomcluster{pointer-events:auto}.stage-bottom{bottom:14px}.imglabel,.stagehint{font-size:9px;font-weight:700;letter-spacing:.1em;color:#dbd7dd;text-shadow:0 1px 10px #000}.imglabel{background:#0009;border-radius:9px;padding:8px}.stagehint{background:#0009;border-radius:8px;padding:8px}.pillmini{border-radius:8px;padding:8px 12px;background:#111b}.zoomcluster{display:flex;gap:1px;align-items:center;background:#14131cbb;border:1px solid #ffffff30;border-radius:9px;overflow:hidden;backdrop-filter:blur(10px)}.zoomcluster button{background:transparent;border:0;width:34px;height:34px;font-size:18px}.zoomcluster span{width:49px;text-align:center;font-size:10px;color:#dbd9dd}.controls{margin-top:22px;max-width:880px;margin-inline:auto}.toolbar{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;border-bottom:1px solid var(--line);padding-bottom:16px}.modes{display:flex;background:#222029;border-radius:10px;padding:3px}.modes button{background:none;border:0;border-radius:8px;font-size:12px;font-weight:650;padding:10px 15px;color:#aaa3ae}.modes .active{background:#3d2734;color:#ffd8e3}.tool-end{display:flex;align-items:center;gap:10px}.brushlabel{font-size:9px;letter-spacing:.1em;color:#b3aab3;display:flex;align-items:center;gap:7px}.brushlabel input{width:74px;accent-color:var(--pink)}.ghost{border:1px solid var(--line);background:transparent;border-radius:9px;padding:8px 9px;font-size:11px}.controlhead{display:flex;justify-content:space-between;align-items:center;margin:21px 0 12px}.tiny{font-size:11px;color:var(--muted)}.recipes{display:flex;gap:8px;overflow:auto;padding-bottom:13px;scrollbar-width:none}.recipes button{flex:none;border:1px solid #49424e;background:#1d1a23;border-radius:20px;font-size:11px;padding:9px 13px;color:#c7bdc8}.recipes button.selected{border-color:#bd617d;background:#38212b;color:#ffd8e4}.controls textarea{width:100%;resize:vertical;min-height:100px;border:1px solid #39323c;background:#18151e;border-radius:14px;color:#fff;font-size:15px;line-height:1.5;padding:15px;outline:none}.controls textarea:focus{border-color:var(--pink)}.controls textarea::placeholder{color:#746d79}.minorsettings{padding:12px 1px}.minorsettings label{display:flex;gap:8px;align-items:flex-start;font-size:11px;line-height:1.45;color:#bab1bc}.minorsettings input{accent-color:var(--pink);width:16px;height:16px;flex:none;margin:1px}.generate{width:100%;font-size:15px;padding:17px;justify-content:space-between}.generate strong{font-size:21px}.footnote{font-size:10px;color:#847b86;text-align:center;margin:12px 0}.jobpanel{background:#1d1a23;border:1px solid #463443;padding:20px;border-radius:14px;margin-top:16px;display:flex;flex-direction:column;gap:12px}.bar{height:4px;border-radius:5px;background:#3c313b;overflow:hidden}.bar>div{height:100%;width:33%;background:var(--pink);animation:move 1.6s infinite ease-in-out}@keyframes move{from{transform:translateX(-110%)}to{transform:translateX(320%)}}.resulthead{margin-top:32px}.result-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.result-card{background:#1d1a23;border:1px solid #38313b;border-radius:12px;overflow:hidden;position:relative;text-align:left;padding:0;display:block}.result-card img{display:block;width:100%;aspect-ratio:4/5;object-fit:cover}.result-card .result-name{font-size:11px;font-weight:650;display:block;padding:11px}.gallery-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.gallery-card{background:#1b1920;border:1px solid #332e36;cursor:pointer;padding:0;overflow:hidden;border-radius:11px}.gallery-card img{width:100%;aspect-ratio:3/4;object-fit:cover;display:block}.gallery-card span{font-size:10px;color:#c9bec9;display:block;padding:9px;text-align:left}.gallery-empty{margin:56px auto;color:#8f8893;max-width:300px;text-align:center;font-size:13px;line-height:1.6}.gallerycount{font-size:10px;letter-spacing:.13em;color:#999}.tabbar{z-index:8;position:fixed;bottom:0;left:0;right:0;background:#101015ee;border-top:1px solid #38313a;display:flex;justify-content:center;padding-bottom:var(--safe);backdrop-filter:blur(20px)}.tab{background:none;border:0;padding:13px 50px 11px;color:#8b8390;font-size:10px;display:flex;flex-direction:column;gap:5px;align-items:center;font-weight:700;letter-spacing:.1em}.tab span{font-size:23px}.tab.active{color:var(--pink)}dialog{position:fixed;width:min(92vw,480px);max-height:90dvh;background:#1b1821;border:1px solid #564352;border-radius:18px;color:#fff;padding:22px;box-shadow:0 15px 60px #000a}dialog::backdrop{background:#000c;backdrop-filter:blur(3px)}.dialog-title{display:flex;justify-content:space-between;font-weight:750;font-size:20px;align-items:center}.dialog-title button{border:0;background:none;font-size:27px}dialog p{color:#aaa2af;font-size:12px;line-height:1.55}.fieldlabel{display:block;margin:22px 0 7px;color:#ddd1de;font-size:12px}.fieldlabel+input{width:100%;color:white;background:#100e15;border:1px solid #4b414d;padding:14px;border-radius:9px}.fieldlabel+input+.primary{margin-top:14px;width:100%}dialog#viewer{width:min(96vw,620px);padding:14px}.preview{background:#09090e;height:min(59dvh,650px);display:grid;place-items:center;position:relative;overflow:hidden;margin-top:13px}.preview img{max-width:100%;max-height:100%;object-fit:contain;position:absolute}.viewactions{display:flex;gap:8px;justify-content:space-between;flex-wrap:wrap;margin-top:13px}.viewactions .primary,.viewactions .subtlebtn{font-size:11px;padding:11px}.toast{z-index:300;position:fixed;left:50%;bottom:calc(var(--safe) + 76px);transform:translate(-50%,30px);opacity:0;transition:opacity .2s,transform .2s;background:#493344;color:#ffe6ee;border:1px solid #8e566e;font-size:12px;padding:13px 19px;border-radius:11px;pointer-events:none;max-width:90vw;text-align:center}.toast.show{opacity:1;transform:translate(-50%,0)}[hidden]{display:none!important}@media(max-width:620px){.screen{padding:24px 12px 100px}.topbar{padding:15px 14px;height:65px}.canvas-shell{height:min(54dvh,540px);min-height:320px}.sectiontop{margin-bottom:15px}.subtlebtn{padding:9px;font-size:11px}.stagehint{font-size:7px}.result-grid,.gallery-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.toolbar{flex-wrap:nowrap;gap:5px}.tool-end{gap:5px}.ghost{padding:8px;font-size:10px}.brushlabel input{width:52px}.modes button{padding:9px;font-size:11px}.controls{margin-top:15px}.controlhead{margin-top:16px}h1{font-size:32px}.viewactions{gap:5px}.viewactions .primary,.viewactions .subtlebtn{flex:1;text-align:center;white-space:nowrap;padding:10px 6px}}
+
+/* Recoverable job controls */
+.resume-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}.resume-actions .primary,.resume-actions .ghost{min-height:42px;flex:1}
+
+/* v7: free local-only editing path */
+.local-preview{background:#2d5a4c;border-color:#6a9185;color:#f4fff8;margin-bottom:10px;}
+.local-preview:disabled{background:#293a35;}
+.preview-disclaimer{font-size:11px;line-height:1.55;color:#aca7b3;margin:8px 0 18px;}
+#result-disclaimer{margin-top:10px;}
+
+/* v8.4: offline Home Screen shell + local privacy controls. No user images are cached by the service worker. */
+.homescreen-help{max-width:480px;margin:13px auto 0;text-align:center;font-size:11px;color:#afa7b3;line-height:1.55}
+.homescreen-help summary{color:#ffd3e0;cursor:pointer;min-height:34px;padding:6px}
+.homescreen-help p{margin:2px auto 8px;max-width:360px}
+/* v8.2: honest free-only UI — no disabled paid action */
+html[data-free-only="true"] #generate,html[data-free-only="true"] .minorsettings,html[data-free-only="true"] .footnote{display:none!important}
+.preview-note{color:#aaa1ac;font-size:11px;line-height:1.55;margin:8px 0 10px}
+
+/* v8: mobile-friendly undo/redo and local-only recovery status */
+.tool-end{flex-wrap:wrap;justify-content:flex-end}
+.draftline{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 0 0;font-size:10px;color:#a5a0ab}
+.draftline #draft-status{color:#ffc0d0;font-weight:650}
+.draftline>span:last-child{text-align:right;max-width:55%}.project-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0 4px}.project-actions .ghost{padding:10px 12px;min-height:42px}.project-actions .tiny{flex:1;min-width:165px}.intro-project{margin-top:8px;text-align:center}.intro-project label{display:inline-block;cursor:pointer}.intro-project small{display:block;margin-top:7px;color:#a7a1ac;font-size:10px}
+@media(max-width:620px){.tool-end{width:100%;justify-content:space-between;gap:7px}.tool-end .ghost{min-height:40px;flex:1}.brushlabel{flex:2}.brushlabel input{width:min(120px,20vw)}.draftline{font-size:9px;line-height:1.45}}
+
+</style>
+</head><body>
+<div class="app">
+ <header class="topbar"><div class="logotype"><div class="mark">O<span>V</span>A</div><div class="submark">ATLAS <em>／</em> 94</div></div><div class="toplinks"><span class="statusdot"></span><span id="connect-label">FREE LOCAL MODE</span><button id="settings" class="roundicon" title="Privacy and local storage" aria-label="Privacy and local storage">⚙</button></div></header>
+ <main>
+ <section id="studio-tab" class="screen">
+  <div class="sectiontop"><div><div class="eyebrow">IMAGE WORKSPACE <span class="count">01 / 02</span></div><h1>Rework the frame<span class="period">.</span></h1></div><button class="subtlebtn" id="change-photo">＋ New image</button></div>
+  <div class="canvas-shell" id="stage">
+    <div id="intro" class="intro"><div class="intrographic">✦</div><div class="introtitle">Start with an image</div><div class="introsub">A ChatGPT anime image from your Photos works perfectly.</div><label for="file-input" class="primary upload">Choose image <span>↗</span></label><p class="hint">Local preview stays on your device. Cloud generation remains locked.</p><div class="intro-project"><label for="project-file-input" class="subtlebtn">Open saved Atlas project</label><small>Restore an image, mask, and prompt from a local project file.</small></div><details class="homescreen-help"><summary>Add Atlas to your iPhone Home Screen</summary><p>Open this site in Safari, tap Share → Add to Home Screen, and choose Open as Web App. You can continue editing when offline after the site has loaded once, provided Safari retains its cache. Save an editable project backup for important work.</p></details></div>
+    <div class="transform" id="transform" hidden><img id="source-image" draggable="false" alt="Current anime image"><canvas id="paint-canvas"></canvas><canvas id="mask-canvas" hidden></canvas></div>
+    <div class="stage-top" id="stage-top" hidden><span class="imglabel">SOURCE / <span id="img-res">—</span></span><button id="fit" class="pillmini">Fit</button></div>
+    <div class="stage-bottom" id="stage-bottom" hidden><div class="zoomcluster"><button id="zoom-out" aria-label="Zoom out">−</button><span id="zoom-state">100%</span><button id="zoom-in" aria-label="Zoom in">＋</button></div><span class="stagehint">PAINT WITH ONE FINGER · PINCH TO ZOOM</span></div>
+  </div>
+  <input type="file" id="file-input" accept="image/*" hidden>
+  <input type="file" id="project-file-input" accept=".json,.ova.json,application/json" hidden>
+  <div class="controls" id="controls" hidden>
+   <div class="toolbar"><div class="modes"><button class="active" id="paint-mode">● Paint</button><button id="erase-mode">◯ Erase</button></div><div class="tool-end"><label class="brushlabel">SIZE <input type="range" id="brush" min="10" max="100" value="42"></label><button id="undo" class="ghost" disabled aria-label="Undo mask stroke">↶ Undo</button><button id="redo" class="ghost" disabled aria-label="Redo mask stroke">↷ Redo</button><button id="clear" class="ghost">Clear</button></div></div>
+   <div class="draftline"><span id="draft-status" role="status" aria-live="polite">Local draft not yet saved</span><span>Autosaved only in this browser</span></div>
+   <div class="project-actions"><button id="export-project" class="ghost" disabled>Save editable project</button><button id="open-project" class="ghost">Open project</button><span class="tiny">Optional portable backup · stays on your device · not AI output</span></div>
+   <div class="controlhead"><span class="eyebrow">TRANSFORMATION</span><span class="tiny" id="mask-status">Paint the edit area</span></div>
+   <div class="recipes" id="recipes"><button data-recipe="ova" class="selected">OVA94 fidelity</button><button data-recipe="latex">Latex couture</button><button data-recipe="swim">Resort swimwear</button><button data-recipe="satin">Silk editorial</button><button data-recipe="restore">Clean linework</button></div>
+   <p class="preview-note">These are notes for a future AI edit. They're saved with your project, but do not change the free color previews.</p>
+   <textarea id="prompt" rows="3" maxlength="1600" spellcheck="true" placeholder="Describe what you want changed in the painted area..."></textarea>
+   <div class="minorsettings"><label><input type="checkbox" id="attest"> I confirm any sexualized subjects are clearly adult and fictional, and I have rights to edit this image.</label></div>
+   <button class="primary generate local-preview" id="local-preview" disabled>Try four free local color previews <strong>◎</strong></button>
+   <p class="preview-disclaimer">LOCAL DEMO · Color treatment only, not AI image generation or a change to garments, anatomy, or pose. No uploads and no charge. Exports may be reduced in size.</p>
+   <button class="primary generate" id="generate" disabled><span>Generate four variations</span><strong>✦</strong></button>
+   <div class="footnote">Cloud generation is locked unless explicitly activated on the server. Outside-mask pixels are preserved in local previews.</div>
+  </div>
+  <div id="resume-panel" class="jobpanel" hidden><span id="resume-note">An edit was submitted. You can reopen it.</span><div class="resume-actions"><button id="resume-pending" class="primary">Resume saved edit</button><button id="forget-pending" class="ghost">Dismiss reference</button></div></div>
+  <div id="job-panel" class="jobpanel" hidden><span id="job-text">Submitting your edit…</span><div class="bar"><div></div></div><button id="stop-poll" class="ghost">Stop watching</button></div>
+  <div id="result-wrap" hidden><div class="resulthead"><div><div class="eyebrow">OUTPUT / <span id="result-count">4</span> FRAMES</div><h2>Choose your take<span class="period">.</span></h2></div><button id="new-edit" class="subtlebtn">Edit again</button></div><p id="result-disclaimer" class="preview-disclaimer" hidden>LOCAL PREVIEW · Simple on-device color variations only. Not AI-generated.</p><div class="result-grid" id="results"></div></div>
+  </section>
+  <section id="gallery-tab" class="screen" hidden><div class="sectiontop"><div><div class="eyebrow">YOUR SAVED EDITS</div><h1>Collection<span class="period">.</span></h1></div><span class="gallerycount" id="gallery-count">0 IMAGES</span></div><div id="gallery-grid" class="gallery-grid"></div><p class="gallery-empty" id="gallery-empty">No images saved yet. Choose a favorite result in Studio to add it here.</p></section>
+ </main>
+ <nav class="tabbar"><button class="tab active" data-tab="studio"><span>◈</span> Studio</button><button class="tab" data-tab="gallery"><span>▦</span> Collection</button></nav>
+</div>
+<dialog id="privacy-dialog" aria-labelledby="privacy-title"><div class="dialog-title"><span id="privacy-title">Privacy &amp; storage</span><button data-close="privacy-dialog" aria-label="Close">×</button></div><p>Your source images, painted masks, saved projects, and Collection edits are not uploaded by this free app. Browser storage is local to this website and may be cleared by Safari.</p><p>Use <strong>Save editable project</strong> in Studio to create a backup before erasing local data.</p><button class="subtlebtn" id="erase-local-data" style="width:100%;min-height:48px;margin-top:12px">Erase all local Atlas data on this device</button><p class="tiny" id="erase-note" role="status">Erases saved Collection images and unfinished drafts from this browser. It does not erase files you've exported to Photos or Files.</p></dialog>
+<dialog id="settings-dialog"><div class="dialog-title"><span>Connection</span><button data-close="settings-dialog" aria-label="Close">×</button></div><p>This offline preview uses no password, no upload, and no paid image provider.</p><label class="fieldlabel" for="app-password">OVA Atlas access password</label><input id="app-password" type="password" autocomplete="off" placeholder="Password set on server"><button class="primary" id="save-password">Save password</button><div id="health-result" class="tiny"></div></dialog>
+<dialog id="viewer"><div class="dialog-title"><span id="viewer-title">VARIANT</span><button data-close="viewer" aria-label="Close">×</button></div><div class="preview"><img id="viewer-image" alt="Generated variant"><img id="viewer-original" alt="Original" hidden></div><div class="viewactions"><button id="compare" class="subtlebtn">Hold to compare</button><button id="save-local" class="subtlebtn">♡ Save to collection</button><button id="delete-saved" class="subtlebtn" hidden>Delete saved image</button><button id="share-image" class="subtlebtn" hidden>Share / Save to Photos</button><a id="download" class="primary" download="OVA-Atlas.png">↓ Save image</a></div><p class="tiny">Hold Compare to display the original source.</p></dialog>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<script>
+
+/* Pure, no-network masked color tests for OVA Atlas. NOT generative AI. */
+(function (root) {
+  'use strict';
+  const names = ['WARM AMBER', 'COOL VIOLET', 'CEL CONTRAST', 'MUTED TEAL'];
+  function clamp(n) { return Math.max(0, Math.min(255, Math.round(n))); }
+  function transform(r, g, b, variant) {
+    switch (variant) {
+      case 0: return [clamp(r * 1.10 + 29), clamp(g * 1.04 + 5), clamp(b * .78 - 9)];
+      case 1: return [clamp(r * .87 + 6), clamp(g * .94 + 8), clamp(b * 1.22 + 29)];
+      case 2: return [clamp((r - 128) * 1.5 + 128), clamp((g - 128) * 1.5 + 128), clamp((b - 128) * 1.5 + 128)];
+      case 3: {
+        const gray = .299*r + .587*g + .114*b;
+        return [clamp(.49*r + .51*gray - 16), clamp(.35*g + .65*gray + 12), clamp(.40*b + .60*gray + 13)];
+      }
+      default: throw Error('Unknown preview variation');
+    }
+  }
+  function applyMaskedPreview(sourceRGBA, maskRGBA, variant) {
+    if (!sourceRGBA || !maskRGBA || sourceRGBA.length !== maskRGBA.length || sourceRGBA.length % 4 !== 0)
+      throw Error('Source and mask must have the same RGBA pixel dimensions');
+    const out = new Uint8ClampedArray(sourceRGBA);
+    for (let i = 0; i < out.length; i += 4) {
+      const strength = (maskRGBA[i] / 255) * (maskRGBA[i + 3] / 255);
+      if (strength <= 0) continue;  // exact byte identity outside mask
+      const color = transform(sourceRGBA[i], sourceRGBA[i+1], sourceRGBA[i+2], variant);
+      out[i] = clamp(sourceRGBA[i] * (1-strength) + color[0] * strength);
+      out[i+1] = clamp(sourceRGBA[i+1] * (1-strength) + color[1] * strength);
+      out[i+2] = clamp(sourceRGBA[i+2] * (1-strength) + color[2] * strength);
+      // Alpha channel remains identical, including outside mask.
+    }
+    return out;
+  }
+  root.OVA_LOCAL_PREVIEW = {names, applyMaskedPreview};
+  if (typeof module === 'object' && module.exports) module.exports = root.OVA_LOCAL_PREVIEW;
+})(typeof globalThis !== 'undefined' ? globalThis : this);
+
+</script>
+<script>
+/* OVA Atlas — phone-first image canvas + real API client, no external JS libraries. */
+'use strict';
+const $ = (id) => document.getElementById(id);
+const state = {
+  source: null, sourceBlob: null, width: 0, height: 0, srcURL: null,
+  maskCanvas: $('mask-canvas'), overlay: $('paint-canvas'),
+  view: { s: 1, x: 0, y: 0 }, pointers: new Map(), pinch: null,
+  strokes: [], redoStrokes: [], clearBackup: null, redoClear: false, current: null, mode: 'paint', brush: 42,
+  results: [], selected: -1, currentJob: null, cancelled: false, localURLs: [], previewType: 'cloud',
+  seriesId: null, lastPrompt: '', lastRecipe: 'ova'
+};
+const recipes = {
+  ova: {label:'OVA94 fidelity', text:'Hand-painted Japanese OVA cel animation, circa 1991–1994. Rework ONLY the selected area. Preserve exact adult character face, hair, body proportions, pose, perspective, linework and background. Traditional cel-shadow layers and realistic facial geometry.'},
+  latex: {label:'Latex couture', text:'Replace only masked garment with sophisticated black latex couture, precise seams, dramatic material highlights. Preserve the original adult character identity, hair, pose, framing, and authentic 1991–1994 Japanese cel animation aesthetic.'},
+  swim: {label:'Resort swimwear', text:'Replace only selected clothing with a carefully designed two-piece swimwear look for a clearly adult fictional character. Preserve face, hairstyle, pose, anatomy, footwear outside the mask, background and OVA94 cel style.'},
+  satin: {label:'Silk editorial', text:'Change only the selected clothing to elegant silk eveningwear with natural drape and soft highlights. Source-locked early-1990s OVA cel drawing, with unchanged face, hairstyle, camera and proportions.'},
+  restore: {label:'Clean linework', text:'Carefully restore the masked cel artwork: precise ink line continuity, two-tone clean shadows, coherent edges and original 1991–1994 OVA color. Do not change character design.'}
+};
+const FREE_ONLY = document.documentElement.dataset.freeOnly === 'true';
+let cloudAllowed = false;
+let accessKey = FREE_ONLY ? '' : (sessionStorage.getItem('ova-key') || '');
+let currentPreviewURL = null;
+let pendingJob = null;
+let pollGeneration = 0;
+// Persist only one unfinished local draft, not every brush event. The queue
+// prevents a slower older save from overwriting a newer edit.
+let draftSaveTimer = null;
+let draftRevision = 0;
+let draftWriteQueue = Promise.resolve();
+let restoringDraft = false;
+let imageLoadRevision = 0;
+let draftStorageWarned = false;
+const DRAFT_ID = 'current';
+function draftStatus(text) {const node=$('draft-status'); if(node) node.textContent=text;}
+function snapshotDraft() {
+  if(!state.sourceBlob || !state.width) return null;
+  return {
+    id:DRAFT_ID, v:1, image:state.sourceBlob, imageName:state.sourceName || 'OVA94 image',
+    strokes: state.strokes.map(s=>({points:s.points.map(p=>({x:p.x,y:p.y})),size:s.size,erase:s.erase})),
+    recipe:state.lastRecipe,prompt:$('prompt').value,brush:state.brush,
+    seriesId:state.seriesId,created:Date.now()
+  };
+}
+function scheduleDraftSave(){
+  if(restoringDraft || !state.sourceBlob)return;
+  const revision=++draftRevision;
+  clearTimeout(draftSaveTimer);
+  draftStatus('Saving local draft…');
+  draftSaveTimer=setTimeout(()=>{
+    const row=snapshotDraft();
+    draftWriteQueue=draftWriteQueue.catch(()=>{}).then(async()=>{
+      if(revision!==draftRevision || !row)return;
+      await dbDraftPut(row);
+      if(revision===draftRevision)draftStatus('Draft saved on this device');
+    }).catch(()=>{
+      if(!draftStorageWarned){draftStorageWarned=true;toast('Browser storage unavailable. Export any images you want to keep.');}
+      draftStatus('Draft not saved — browser storage unavailable');
+    });
+  },450);
+}
+function validDraftStrokes(value){
+  if(!Array.isArray(value))return [];
+  return value.slice(0,500).map(s=>({
+    size:Number.isFinite(s.size)?Math.max(.25,Math.min(300,s.size)):10,
+    erase:!!s.erase,
+    points:Array.isArray(s.points)?s.points.slice(0,8000).filter(p=>p&&Number.isFinite(p.x)&&Number.isFinite(p.y)).map(p=>({x:p.x,y:p.y})):[]
+  })).filter(s=>s.points.length);
+}
+async function recoverDraft(){
+  try{
+    const expectedLoad=imageLoadRevision;
+    const row=await dbDraftGet();
+    if(!row || !row.image || state.width || !row.v || expectedLoad!==imageLoadRevision)return;
+    restoringDraft=true;
+    const ok=await chooseFile(row.image,{skipDraftSave:true});
+    if(!ok)return;
+    state.sourceName=row.imageName || 'Recovered image';
+    state.strokes=validDraftStrokes(row.strokes);
+    state.redoStrokes=[];state.clearBackup=null;state.redoClear=false;
+    if(recipes[row.recipe])setRecipe(row.recipe);
+    $('prompt').value=typeof row.prompt==='string'?row.prompt.slice(0,1600):$('prompt').value;
+    if(Number.isFinite(row.brush))state.brush=Math.max(10,Math.min(100,row.brush));
+    $('brush').value=state.brush;
+    state.seriesId=row.seriesId || state.seriesId;
+    redraw();
+    draftStatus('Recovered last local draft');
+    toast('Your unfinished edit was restored on this device.');
+  }catch{
+    draftStatus('Draft storage unavailable in this browser');
+  }finally{restoringDraft=false;}
+}
+
+
+function toast(msg) { const el = $('toast'); el.textContent = msg; el.classList.add('show'); clearTimeout(toast.timer); toast.timer = setTimeout(()=>el.classList.remove('show'), 3500); }
+function show(id, yes=true) { $(id).hidden = !yes; }
+function setTab(tab){
+  show('studio-tab',tab==='studio'); show('gallery-tab',tab==='gallery');
+  document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
+  if(tab==='gallery') void renderGallery();
+}
+document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>setTab(b.dataset.tab)));
+function settingsOpen() { if(FREE_ONLY){ $('privacy-dialog').showModal(); return; } $('app-password').value=accessKey; $('settings-dialog').showModal(); }
+$('settings').onclick=settingsOpen;
+document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>$(b.dataset.close).close());
+$('save-password').onclick=()=>{
+  accessKey=$('app-password').value.trim(); sessionStorage.setItem('ova-key',accessKey);
+  $('settings-dialog').close(); toast('Access password stored for this browser tab');
+};
+async function ping(){
+  if (FREE_ONLY) { cloudAllowed=false; $('connect-label').textContent='FREE LOCAL MODE'; return; }
+  try { const r=await fetch('/api/health'); const d=await r.json(); cloudAllowed=Boolean(d.cloudGenerationEnabled && d.configured); $('connect-label').textContent=cloudAllowed?'CLOUD READY':'FREE LOCAL MODE'; $('connect-label').title=d.engine; }
+  catch {cloudAllowed=false;$('connect-label').textContent='FREE LOCAL MODE';}
+  maskChanged();
+}
+void ping();
+
+const stage=$('stage'), layer=$('transform'), mask=state.maskCanvas, overlay=state.overlay;
+const mc=mask.getContext('2d'), oc=overlay.getContext('2d');
+function mapPoint(e){const r=stage.getBoundingClientRect(),v=state.view;return{x:(e.clientX-r.left-v.x)/v.s,y:(e.clientY-r.top-v.y)/v.s};}
+function applyView(){const {s,x,y}=state.view;layer.style.transform=`translate3d(${x}px,${y}px,0) scale(${s})`;const fit=Math.min(stage.clientWidth/state.width,stage.clientHeight/state.height);$('zoom-state').textContent=`${Math.round(s/fit*100)}%`;}
+function fitView(){if(!state.width)return;const s=Math.min(stage.clientWidth/state.width,stage.clientHeight/state.height);state.view={s,x:(stage.clientWidth-state.width*s)/2,y:(stage.clientHeight-state.height*s)/2};applyView();}
+function capView(v){const cw=stage.clientWidth,ch=stage.clientHeight;const w=state.width*v.s,h=state.height*v.s;const minX=Math.min(0,cw-w),maxX=Math.max(0,cw-w);const minY=Math.min(0,ch-h),maxY=Math.max(0,ch-h);return{s:v.s,x:Math.max(minX,Math.min(maxX,v.x)),y:Math.max(minY,Math.min(maxY,v.y))};}
+function zoom(factor){if(!state.width)return;const v=state.view,cx=stage.clientWidth/2,cy=stage.clientHeight/2;const fit=Math.min(stage.clientWidth/state.width,stage.clientHeight/state.height),next=Math.max(fit*.75,Math.min(fit*9,v.s*factor));const ix=(cx-v.x)/v.s,iy=(cy-v.y)/v.s;state.view=capView({s:next,x:cx-ix*next,y:cy-iy*next});applyView();}
+$('fit').onclick=fitView;
+$('zoom-in').onclick=()=>zoom(1.35);
+$('zoom-out').onclick=()=>zoom(1/1.35);
+function paintSegment(ctx,pts,size,erase,visible){if(!pts.length)return;ctx.save();ctx.globalCompositeOperation=erase?'destination-out':'source-over';ctx.lineWidth=size;ctx.lineCap='round';ctx.lineJoin='round';ctx.fillStyle=visible?'rgba(255,93,146,.56)':'#fff';ctx.strokeStyle=ctx.fillStyle;if(pts.length===1){ctx.beginPath();ctx.arc(pts[0].x,pts[0].y,size/2,0,Math.PI*2);ctx.fill();}else{ctx.beginPath();ctx.moveTo(pts[0].x,pts[0].y);for(let i=1;i<pts.length;i++)ctx.lineTo(pts[i].x,pts[i].y);ctx.stroke();}ctx.restore();}
+function redraw(){mc.clearRect(0,0,mask.width,mask.height);oc.clearRect(0,0,overlay.width,overlay.height);for(const s of state.strokes){paintSegment(mc,s.points,s.size,s.erase,false);paintSegment(oc,s.points,s.size,s.erase,true);}maskChanged();}
+function maskChanged(){
+  const painted=state.strokes.some(s=>!s.erase);
+  $('mask-status').textContent=painted?'Mask ready — preview or describe an edit':'Paint the edit area';
+  const ready=Boolean(state.width && painted && !state.currentJob && !pendingJob);
+  $('local-preview').disabled=!ready;
+  $('generate').disabled=!(cloudAllowed && ready && $('prompt').value.trim() && $('attest').checked);
+  $('generate').title=cloudAllowed?'':'Paid generation is disabled. Use the local preview.';
+  $('undo').disabled=!state.strokes.length && !state.clearBackup;
+  $('redo').disabled=!state.redoStrokes.length && !state.redoClear;
+  $('export-project').disabled=!state.sourceBlob || state.currentJob!==null;
+}
+
+function endStroke(){
+  const hadStroke=Boolean(state.current);
+  state.current=null;maskChanged();
+  if(hadStroke)scheduleDraftSave();
+}
+function distance(a,b){return Math.hypot(a.x-b.x,a.y-b.y);}
+function mid(a,b){return{x:(a.x+b.x)/2,y:(a.y+b.y)/2};}
+stage.addEventListener('pointerdown',e=>{
+  if(!state.width || e.target.closest('button'))return;
+  if(e.pointerType==='mouse'&&e.button!==0)return;
+  e.preventDefault(); stage.setPointerCapture?.(e.pointerId);
+  state.pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(state.pointers.size===2){
+    if(state.current){state.strokes.pop();state.current=null;redraw();}
+    const[a,b]=[...state.pointers.values()];state.pinch={dist:Math.max(1,distance(a,b)),mid:mid(a,b),view:{...state.view}};return;
+  }
+  if(state.pointers.size!==1)return;
+  const point=mapPoint(e), stroke={points:[point],size:state.brush/state.view.s,erase:state.mode==='erase'};
+  state.redoStrokes=[];state.clearBackup=null;state.redoClear=false;state.strokes.push(stroke);state.current=stroke;paintSegment(mc,stroke.points,stroke.size,stroke.erase,false);paintSegment(oc,stroke.points,stroke.size,stroke.erase,true);maskChanged();
+});
+stage.addEventListener('pointermove',e=>{
+ if(!state.pointers.has(e.pointerId))return;
+ state.pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+ if(state.pointers.size>=2&&state.pinch){const[a,b]=[...state.pointers.values()],p=state.pinch,md=mid(a,b),nextS=Math.max(.01,Math.min(p.view.s*9,p.view.s*distance(a,b)/p.dist));const r=stage.getBoundingClientRect();const ix=(p.mid.x-r.left-p.view.x)/p.view.s,iy=(p.mid.y-r.top-p.view.y)/p.view.s;state.view=capView({s:nextS,x:md.x-r.left-ix*nextS,y:md.y-r.top-iy*nextS});applyView();return;}
+ if(!state.current)return;
+ const samples=e.getCoalescedEvents?.()??[e];for(const sample of samples.length?samples:[e]){
+  const next=mapPoint(sample),pts=state.current.points,last=pts[pts.length-1];
+  if(distance(next,last)<.5)continue;pts.push(next);
+  paintSegment(mc,[last,next],state.current.size,state.current.erase,false);paintSegment(oc,[last,next],state.current.size,state.current.erase,true);
+ }
+});
+function finishPointer(e){if(!state.pointers.has(e.pointerId))return;state.pointers.delete(e.pointerId);if(e.type==='pointercancel'&&state.current){state.strokes.pop();redraw();}if(state.pointers.size<2)state.pinch=null;endStroke();try{stage.releasePointerCapture(e.pointerId)}catch{}}
+for(const name of ['pointerup','pointercancel','lostpointercapture'])stage.addEventListener(name,finishPointer);
+function undoStroke(){
+ if(state.current)return;
+ if(state.strokes.length){state.redoStrokes.push(state.strokes.pop());}
+ else if(state.clearBackup){state.strokes=state.clearBackup;state.clearBackup=null;state.redoClear=true;}
+ else return;
+ redraw();scheduleDraftSave();
+}
+function redoStroke(){
+ if(state.current)return;
+ if(state.redoStrokes.length){state.strokes.push(state.redoStrokes.pop());}
+ else if(state.redoClear){state.clearBackup=state.strokes;state.strokes=[];state.redoClear=false;}
+ else return;
+ redraw();scheduleDraftSave();
+}
+$('undo').onclick=undoStroke;
+$('redo').onclick=redoStroke;
+$('clear').onclick=()=>{
+ if(!state.strokes.length)return;
+ // Clearing a mask is reversible until another brush action starts.
+ state.clearBackup=state.strokes;state.strokes=[];state.redoStrokes=[];state.redoClear=false;
+ redraw();scheduleDraftSave();
+};
+$('brush').oninput=e=>{state.brush=Number(e.target.value);scheduleDraftSave();};
+document.addEventListener('keydown',e=>{
+ if(!(e.metaKey||e.ctrlKey) || e.altKey || e.key.toLowerCase()!=='z')return;
+ const target=e.target;
+ if(target && (target.closest('input,textarea,[contenteditable="true"]')))return;
+ e.preventDefault();if(e.shiftKey)redoStroke();else undoStroke();
+});
+function setMode(mode){state.mode=mode;$('paint-mode').classList.toggle('active',mode==='paint');$('erase-mode').classList.toggle('active',mode==='erase')}
+$('paint-mode').onclick=()=>setMode('paint');$('erase-mode').onclick=()=>setMode('erase');
+$('prompt').addEventListener('input',()=>{maskChanged();scheduleDraftSave();});$('attest').addEventListener('change',maskChanged);
+function setRecipe(k){state.lastRecipe=k;document.querySelectorAll('[data-recipe]').forEach(x=>x.classList.toggle('selected',x.dataset.recipe===k));$('prompt').value=recipes[k].text;maskChanged();scheduleDraftSave();}
+document.querySelectorAll('[data-recipe]').forEach(x=>x.onclick=()=>setRecipe(x.dataset.recipe));
+setRecipe('ova');
+
+function loadImageFromBlob(blob){return new Promise((resolve,reject)=>{const url=URL.createObjectURL(blob),img=new Image();img.onload=()=>resolve({img,url});img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error('Image could not be decoded.'))};img.src=url;});}
+async function prepareFile(file){
+  if(!file || file.size>35_000_000)throw Error('Please use an image under 35 MB.');
+  const {img,url}=await loadImageFromBlob(file);
+  try{
+    const naturalWidth=img.naturalWidth,naturalHeight=img.naturalHeight;
+    if(!naturalWidth||!naturalHeight)throw Error('Image has no readable dimensions.');
+    // Do not recompress a ChatGPT image if it already fits the API limits.
+    // This preserves the original decoded pixels and avoids avoidable JPEG damage.
+    const keepTypes=new Set(['image/png','image/jpeg','image/webp']);
+    if(keepTypes.has(file.type)&&file.size<3_900_000&&Math.max(naturalWidth,naturalHeight)<=2048&&naturalWidth*naturalHeight<=2048*2048){
+      return file;
+    }
+    const scale=Math.min(1,2048/Math.max(naturalWidth,naturalHeight),Math.sqrt((2048*2048)/(naturalWidth*naturalHeight)));
+    const w=Math.max(1,Math.round(naturalWidth*scale)),h=Math.max(1,Math.round(naturalHeight*scale));
+    const cv=document.createElement('canvas');cv.width=w;cv.height=h;
+    const c=cv.getContext('2d');if(!c)throw Error('Image editing is unavailable.');
+    // Opaque canvas makes the server's RGB conversion deterministic for alpha PNGs.
+    c.fillStyle='#000000';c.fillRect(0,0,w,h);c.drawImage(img,0,0,w,h);
+    const encode=(mime,quality)=>new Promise((yes,no)=>cv.toBlob(b=>b?yes(b):no(Error('Could not prepare image')),mime,quality));
+    // Prefer lossless PNG, then high-quality JPEG only if a compact upload is required.
+    let out=await encode('image/png');
+    if(out.size>=3_900_000){
+      for(const quality of [.95,.89,.8]){
+        out=await encode('image/jpeg',quality);
+        if(out.size<3_900_000)break;
+      }
+    }
+    if(out.size>=3_900_000)throw Error('This image is too complex for a 4 MB upload. Try a smaller source.');
+    return out;
+  } finally { URL.revokeObjectURL(url); }
+}
+async function chooseFile(file,{skipDraftSave=false}={}){
+ try{
+  if(!file)return false;
+  if(!skipDraftSave && state.width && (state.strokes.length||state.results.length) &&
+     !window.confirm('Replace this edit? Use Save editable project first if you want to keep the current mask and notes. Saved Collection images will remain.'))return false;
+  const loadRevision=++imageLoadRevision;
+  toast('Preparing image…');const blob=await prepareFile(file);
+  if(loadRevision!==imageLoadRevision)return false;
+  const loaded=await loadImageFromBlob(blob);
+  if(loadRevision!==imageLoadRevision){URL.revokeObjectURL(loaded.url);return false;}
+  if(state.srcURL)URL.revokeObjectURL(state.srcURL);
+  for (const u of state.localURLs) URL.revokeObjectURL(u); state.localURLs=[];
+  ++draftRevision;clearTimeout(draftSaveTimer);
+  state.previewType='cloud'; state.srcURL=loaded.url;state.source=loaded.img;state.sourceBlob=blob;state.sourceName=file.name||'Imported image';state.width=loaded.img.naturalWidth;state.height=loaded.img.naturalHeight;state.seriesId=crypto.randomUUID?.()||String(Date.now());
+  $('source-image').src=loaded.url;$('source-image').width=state.width;$('source-image').height=state.height;
+  mask.width=overlay.width=state.width;mask.height=overlay.height=state.height;
+  layer.style.width=state.width+'px';layer.style.height=state.height+'px';state.strokes=[];state.redoStrokes=[];state.clearBackup=null;state.redoClear=false;state.current=null;state.results=[];state.currentJob=null;
+  show('intro',false);show('transform',true);show('stage-top',true);show('stage-bottom',true);show('controls',true);show('result-wrap',false);show('job-panel',false);
+  $('img-res').textContent=`${state.width}×${state.height}`;redraw();fitView();
+  requestAnimationFrame(fitView);
+  if(!skipDraftSave)scheduleDraftSave();
+  return true;
+ }catch(e){toast(e.message||'Could not open image');return false;}
+}
+$('file-input').onchange=e=>{void chooseFile(e.target.files?.[0]);e.target.value=''};
+
+// Portable offline project files avoid depending solely on origin-scoped
+// IndexedDB (which iPhone Safari may evict). The editor never uploads them.
+const PROJECT_FORMAT='ova-atlas-editable-project';
+const PROJECT_VERSION=1;
+const MAX_PROJECT_BYTES=10_000_000;
+const MAX_EMBEDDED_IMAGE_BYTES=4_200_000;
+const PROJECT_MIME_TYPES=new Set(['image/png','image/jpeg','image/webp']);
+function blobToDataURL(blob){return new Promise((resolve,reject)=>{
+  const reader=new FileReader();reader.onerror=()=>reject(Error('Could not prepare local project'));
+  reader.onload=()=>resolve(reader.result);reader.readAsDataURL(blob);
+});}
+function projectDataURLtoBlob(value){
+ if(typeof value!=='string'||value.length>6_200_000)throw Error('Invalid project image');
+ const match=/^data:(image\/(?:png|jpeg|webp));base64,([A-Za-z0-9+/]+={0,2})$/.exec(value);
+ if(!match||!PROJECT_MIME_TYPES.has(match[1]))throw Error('This project has an unsupported image');
+ let binary;try{binary=atob(match[2]);}catch{throw Error('Damaged image in project');}
+ if(!binary.length||binary.length>MAX_EMBEDDED_IMAGE_BYTES)throw Error('Project image exceeds local size limit');
+ const bytes=new Uint8Array(binary.length);
+ for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);
+ return new Blob([bytes],{type:match[1]});
+}
+async function createProjectFile(){
+ const row=snapshotDraft();if(!row)throw Error('Import an image before saving a project');
+ if(!PROJECT_MIME_TYPES.has(row.image.type)||row.image.size>MAX_EMBEDDED_IMAGE_BYTES)
+   throw Error('This image cannot be stored in a portable project');
+ const payload={
+  format:PROJECT_FORMAT,version:PROJECT_VERSION,exportedAt:new Date().toISOString(),
+  source:{name:String(row.imageName||'Image').slice(0,120),dataURL:await blobToDataURL(row.image)},
+  edit:{strokes:row.strokes,prompt:row.prompt,recipe:row.recipe,brush:row.brush,
+    mode:state.mode,seriesId:row.seriesId}
+ };
+ const blob=new Blob([JSON.stringify(payload)],{type:'application/json'});
+ if(blob.size>MAX_PROJECT_BYTES)throw Error('Project exceeds local backup size limit');
+ return new File([blob],`OVA94-Project-${Date.now()}.ova.json`,{type:'application/json'});
+}
+$('export-project').onclick=async()=>{
+ const button=$('export-project');if(button.disabled)return;
+ button.disabled=true;button.textContent='Preparing project…';
+ try{
+  const file=await createProjectFile();
+  const url=URL.createObjectURL(file),link=document.createElement('a');
+  link.href=url;link.download=file.name;document.body.append(link);link.click();link.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),60_000);
+  toast('Editable project saved to your device · no upload');
+ }catch(e){toast(e.message||'Could not save editable project');}
+ finally{button.textContent='Save editable project';maskChanged();}
+};
+$('open-project').onclick=()=>$('project-file-input').click();
+async function importProjectFile(file){
+ if(!file)return false;
+ if(file.size>MAX_PROJECT_BYTES)throw Error('Project file is too large');
+ let project;
+ try{project=JSON.parse(await file.text());}catch{throw Error('This is not a readable Atlas project');}
+ if(!project||project.format!==PROJECT_FORMAT||project.version!==PROJECT_VERSION||!project.source||!project.edit)
+   throw Error('Unsupported Atlas project file');
+ const source=projectDataURLtoBlob(project.source.dataURL);
+ const edit=project.edit;
+ if(!Array.isArray(edit.strokes)||edit.strokes.length>500)throw Error('Damaged project mask');
+ if(typeof edit.prompt!=='string'||edit.prompt.length>1600)throw Error('Damaged project prompt');
+ const strokes=validDraftStrokes(edit.strokes);
+ if(state.width && !window.confirm('Open this project and replace your current Studio edit? Saved Collection images will remain.'))return false;
+ restoringDraft=true;
+ try{
+  const loaded=await chooseFile(source,{skipDraftSave:true});
+  if(!loaded)throw Error('Project image could not be opened');
+  state.sourceName=typeof project.source.name==='string'?project.source.name.slice(0,120):'Imported project';
+  state.strokes=strokes;state.redoStrokes=[];state.clearBackup=null;state.redoClear=false;
+  if(recipes[edit.recipe])setRecipe(edit.recipe);
+  $('prompt').value=edit.prompt;
+  if(Number.isFinite(edit.brush))state.brush=Math.max(10,Math.min(100,edit.brush));
+  $('brush').value=state.brush;
+  if(edit.mode==='erase'||edit.mode==='paint')setMode(edit.mode);
+  if(typeof edit.seriesId==='string'&&edit.seriesId.length<120)state.seriesId=edit.seriesId;
+  redraw();draftStatus('Project restored · saving draft locally');
+  setTab('studio');toast('Editable project restored on this device');
+  return true;
+ }finally{restoringDraft=false;scheduleDraftSave();}
+}
+$('project-file-input').onchange=e=>{
+ const file=e.target.files?.[0];e.target.value='';
+ void importProjectFile(file).catch(error=>toast(error.message||'Could not open project'));
+};
+$('change-photo').onclick=()=>$('file-input').click();
+$('new-edit').onclick=()=>{
+  // The user explicitly advanced beyond the recovered results. Clear the
+  // completed job reference; images already saved in Collection are retained.
+  if (pendingJob && pendingJob.status === 'succeeded') void clearPending();
+  show('result-wrap',false);stage.scrollIntoView({behavior:'smooth'});
+};
+window.addEventListener('resize',()=>{if(state.width)fitView()});
+function makeMaskBlob(){return new Promise((resolve,reject)=>{
+ const cv=document.createElement('canvas');cv.width=state.width;cv.height=state.height;const ctx=cv.getContext('2d');ctx.fillStyle='#000';ctx.fillRect(0,0,cv.width,cv.height);ctx.drawImage(mask,0,0);
+ cv.toBlob(b=>b?resolve(b):reject(Error('Could not export mask')),'image/png');
+});}
+function getError(obj){if(!obj)return 'Unknown server error';if(typeof obj==='string')return obj;if(obj.detail)return getError(obj.detail);if(obj.error)return getError(obj.error);if(typeof obj.message==='string')return obj.message;return 'Server error';}
+async function api(path,options={}){
+ const res=await fetch(path,{...options,headers:{'X-Atlas-Key':accessKey,...(options.headers||{})}});let data=await res.json().catch(()=>({}));if(!res.ok)throw Error(getError(data));return data;
+}
+// A browser interruption must never strand a paid cloud job. Persist the job
+// ID and original source in IndexedDB, separate from saved gallery images.
+async function persistPending(row) {
+  pendingJob = row;
+  try { await dbPendingPut(row); }
+  catch (e) { toast('Browser storage unavailable; keep this tab open for your edit.'); }
+  updatePendingBanner();
+  maskChanged();
+}
+async function clearPending() {
+  pendingJob = null;
+  try { await dbPendingDelete(); } catch (e) { /* IndexedDB can be disabled in private mode */ }
+  updatePendingBanner();
+  maskChanged();
+}
+function updatePendingBanner() {
+  const visible = Boolean(pendingJob);
+  show('resume-panel',visible);
+  if (visible) {
+    $('resume-note').textContent = pendingJob.status === 'succeeded'
+      ? 'Your completed edit can be reopened.'
+      : 'An edit was submitted. You can resume watching it, even after a reload.';
+  }
+}
+async function recoverPending() {
+  try { pendingJob = await dbPendingGet(); } catch (e) { pendingJob = null; }
+  updatePendingBanner();
+  maskChanged();
+  // Do not auto-poll on reload without explicit user action: that can surprise
+  // someone who is reviewing a different image. Resume button is always shown.
+}
+async function watchJob(jobId) {
+  if (state.currentJob) return;
+  if (!accessKey) { settingsOpen(); toast('Enter your Atlas access password to resume the edit.'); return; }
+  const version = ++pollGeneration;
+  state.cancelled = false;
+  state.currentJob = jobId;
+  show('job-panel',true);
+  show('resume-panel',false);
+  $('job-text').textContent='Checking your edit…';
+  maskChanged();
+  let elapsed = 0;
+  try {
+    // A completed job is returned immediately on the first poll, avoiding
+    // duplicate billable submissions after mobile Safari restarts.
+    while (version === pollGeneration) {
+      const s=await api(`/api/edit/${encodeURIComponent(jobId)}`);
+      if (version !== pollGeneration) break;
+      if (s.status === 'succeeded') {
+        state.results=s.images||[];state.previewType='cloud';
+        if (pendingJob && pendingJob.jobId === jobId) {
+          pendingJob.status='succeeded';
+          try { await dbPendingPut(pendingJob); } catch (e) { /* optional persistence */ }
+        }
+        show('job-panel',false);
+        updatePendingBanner();
+        renderResults();
+        toast(`${state.results.length} edited ${state.results.length===1?'image is':'images are'} ready`);
+        return;
+      }
+      if (s.status === 'failed') {
+        await clearPending();
+        throw Error(getError(s.error));
+      }
+      if (s.status !== 'queued' && s.status !== 'processing') throw Error('Unexpected generation status.');
+      $('job-text').textContent = `${s.status === 'queued'?'In queue':'Generating and preserving source pixels'} · ${elapsed}s`;
+      await new Promise(r=>setTimeout(r,1700));
+      elapsed+=2;
+    }
+  } catch (e) {
+    if (version === pollGeneration) {
+      $('job-text').textContent=e.message||'Could not check your edit';
+      toast(e.message||'Could not check your edit');
+      // Keep the job ID: temporary errors can resolve after a reload.
+      updatePendingBanner();
+    }
+  } finally {
+    if (version === pollGeneration) {
+      state.currentJob=null;
+      maskChanged();
+      if (pendingJob) show('resume-panel',true);
+    }
+  }
+}
+
+// Local mode is a color preview of an existing image, NEVER generative AI.
+// Pixel changes are computed entirely in local canvas. No fetch(), no API key,
+// and no cloud generation even when the backend is misconfigured.
+async function localPreviews() {
+  if (!$('local-preview') || $('local-preview').disabled || !state.source) return;
+  if (state.currentJob || pendingJob) { toast('Finish or dismiss the saved edit first.'); return; }
+  const button=$('local-preview'); button.disabled=true;
+  button.textContent='Creating local previews…';
+  try {
+    // On iPhone, cap a UI demonstration so four large PNGs don't exhaust Safari memory.
+    const scale=Math.min(1, Math.sqrt(1_600_000/(state.width*state.height)));
+    const w=Math.max(1,Math.round(state.width*scale)), h=Math.max(1,Math.round(state.height*scale));
+    const canvas=document.createElement('canvas'); canvas.width=w; canvas.height=h;
+    const ctx=canvas.getContext('2d',{willReadFrequently:true});
+    ctx.drawImage(state.source,0,0,w,h);
+    const sourceRGBA=ctx.getImageData(0,0,w,h);
+    const maskCanvas=document.createElement('canvas'); maskCanvas.width=w; maskCanvas.height=h;
+    const maskCtx=maskCanvas.getContext('2d',{willReadFrequently:true});
+    maskCtx.imageSmoothingEnabled=false; // never expand painted region via resampling
+    maskCtx.drawImage(mask,0,0,w,h);
+    const maskRGBA=maskCtx.getImageData(0,0,w,h);
+    if (!maskRGBA.data.some((_,i)=>i%4===3 && maskRGBA.data[i]>0)) throw Error('Paint a mask before previewing.');
+    const urls=[];
+    try {
+      for (let variant=0;variant<4;variant++) {
+        const pixels=OVA_LOCAL_PREVIEW.applyMaskedPreview(sourceRGBA.data,maskRGBA.data,variant);
+        const out=new ImageData(pixels,w,h);
+        ctx.putImageData(out,0,0);
+        const blob=await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(Error('PNG export failed')),'image/png'));
+        urls.push(URL.createObjectURL(blob));
+        // Repaint source before next generation to keep data independent.
+        ctx.putImageData(sourceRGBA,0,0);
+      }
+    } catch (error) {urls.forEach(u=>URL.revokeObjectURL(u));throw error;}
+    for(const old of state.localURLs) URL.revokeObjectURL(old);
+    state.localURLs=urls;
+    state.results=urls.map((url,i)=>({url,name:OVA_LOCAL_PREVIEW.names[i]}));
+    state.previewType='local'; state.lastPrompt='Local color preview · not AI';
+    show('job-panel',false);renderResults();
+    toast('Four free local previews ready · no upload, no charge');
+  } catch(error){ toast(error.message||'Local preview failed'); }
+  finally { button.textContent='Try four free local color previews ◎'; maskChanged(); }
+}
+$('local-preview').onclick=()=>void localPreviews();
+
+async function startGeneration() {
+  if (!cloudAllowed || FREE_ONLY) { toast('Cloud generation is locked. Use free local previews.');return; }
+  if (pendingJob) {
+    updatePendingBanner();
+    toast('Resume or dismiss the saved edit before starting another.');
+    $('resume-panel').scrollIntoView({behavior:'smooth',block:'nearest'});
+    return;
+  }
+  if (!accessKey) { settingsOpen(); return; }
+  if (!state.width) { toast('Choose an image first.'); return; }
+  if (state.currentJob) return;
+  state.currentJob='submitting';
+  maskChanged();
+  show('job-panel',true);
+  show('result-wrap',false);
+  $('job-text').textContent='Submitting your edit…';
+  try {
+    const maskBlob=await makeMaskBlob();
+    const form=new FormData();
+    form.append('image',state.sourceBlob,'image.png');
+    form.append('mask',maskBlob,'mask.png');
+    form.append('prompt',$('prompt').value);
+    form.append('options',JSON.stringify({variants:4}));
+    form.append('attested',$('attest').checked?'true':'false');
+    state.lastPrompt=$('prompt').value;
+    const job=await api('/api/edit',{method:'POST',body:form});
+    // This is the only billable submission. Resume calls only GET.
+    await persistPending({id:'active',jobId:job.jobId,status:'queued',original:state.sourceBlob,seriesId:state.seriesId,prompt:state.lastPrompt,created:Date.now()});
+    state.currentJob=null;
+    await watchJob(job.jobId);
+  } catch (e) {
+    state.currentJob=null;
+    maskChanged();
+    show('job-panel',false);
+    toast(e.message||'Could not submit the edit');
+  }
+}
+$('generate').onclick=()=>void startGeneration();
+$('stop-poll').onclick=()=>{
+  ++pollGeneration;
+  state.cancelled=true;
+  state.currentJob=null;
+  show('job-panel',false);
+  maskChanged();
+  updatePendingBanner();
+  toast('Stopped watching. You can resume this edit without paying again.');
+};
+$('resume-pending').onclick=()=>void (async()=>{
+  if (!pendingJob) return;
+  if (!accessKey) { settingsOpen(); toast('Save your Atlas access password to resume.'); return; }
+  if (pendingJob.original) {
+    await chooseFile(pendingJob.original);
+    state.seriesId=pendingJob.seriesId||state.seriesId;
+    state.lastPrompt=pendingJob.prompt||'';
+  }
+  await watchJob(pendingJob.jobId);
+})();
+$('forget-pending').onclick=()=>void (async()=>{
+  ++pollGeneration;
+  state.currentJob=null;
+  show('job-panel',false);
+  await clearPending();
+  maskChanged();
+  toast('Saved job reference cleared. This does not cancel cloud processing.');
+})();
+function renderResults(){const grid=$('results');grid.replaceChildren();show('result-wrap',true);show('result-disclaimer',state.previewType==='local');$('result-count').textContent=state.results.length;
+  state.results.forEach((out,i)=>{const b=document.createElement('button');b.className='result-card';b.innerHTML=`<img alt="${state.previewType==='local'?'Local color preview':'Generated variation'} ${i+1}"><span class="result-name">${state.previewType==='local'?out.name:'TAKE '+String(i+1).padStart(2,'0')}　 ↗</span>`;b.querySelector('img').src=out.url;b.onclick=()=>openViewer(i);grid.appendChild(b)});
+  $('result-wrap').scrollIntoView({behavior:'smooth',block:'start'});
+}
+let galleryOriginalURL=null;
+let viewerCollectionRow=null;
+let viewerFile=null;
+let viewerLoadRevision=0;
+function prepareViewerShare(url){
+  const revision=++viewerLoadRevision;
+  viewerFile=null;
+  $('share-image').hidden=true;
+  if(typeof navigator.share!=='function'||typeof navigator.canShare!=='function')return;
+  // Prepare the file before the click; iOS requires navigator.share() to be
+  // invoked while the user gesture is still active.
+  fetch(url).then(r=>{if(!r.ok)throw Error('Preview unavailable');return r.blob()}).then(blob=>{
+    if(revision!==viewerLoadRevision)return;
+    const file=new File([blob],`OVA94-${Date.now()}.png`,{type:'image/png'});
+    if(navigator.canShare({files:[file]})){
+      viewerFile=file;
+      $('share-image').hidden=false;
+      $('share-image').disabled=false;
+    }
+  }).catch(()=>{});
+}
+function openViewer(i){
+  state.selected=i;const out=state.results[i];if(!out)return;
+  viewerCollectionRow=null;
+  $('save-local').hidden=false;
+  $('save-local').textContent='♡ Save to collection';
+  $('delete-saved').hidden=true;
+  $('viewer-title').textContent=state.previewType==='local'?`LOCAL PREVIEW ${String(i+1).padStart(2,'0')} · NOT AI`:`VARIANT ${String(i+1).padStart(2,'0')}`;
+  $('viewer-image').src=out.url;
+  $('viewer-original').src=state.srcURL||'';
+  $('viewer-original').hidden=true;
+  $('download').href=out.url;
+  $('download').download=`OVA94-${Date.now()}-${i+1}.png`;
+  prepareViewerShare(out.url);
+  $('viewer').showModal();
+}
+function openGalleryViewer(row,url){
+  viewerCollectionRow=row;
+  if(galleryOriginalURL)URL.revokeObjectURL(galleryOriginalURL);
+  galleryOriginalURL=row.original instanceof Blob?URL.createObjectURL(row.original):null;
+  $('viewer-title').textContent=row.name||'SAVED IMAGE';
+  $('viewer-image').src=url;
+  $('viewer-original').src=galleryOriginalURL||url;
+  $('viewer-original').hidden=true;
+  $('save-local').hidden=true;
+  $('delete-saved').hidden=false;
+  $('download').href=url;
+  $('download').download=`OVA94-${Date.now()}.png`;
+  prepareViewerShare(url);
+  $('viewer').showModal();
+}
+$('share-image').onclick=()=>{
+  if(!viewerFile)return;
+  navigator.share({files:[viewerFile],title:'OVA Atlas image'}).catch(e=>{
+    if(e?.name!=='AbortError')toast('Sharing failed. Use Save image instead.');
+  });
+};
+$('viewer').addEventListener('close',()=>{
+  ++viewerLoadRevision;
+  viewerFile=null;
+  if(galleryOriginalURL){URL.revokeObjectURL(galleryOriginalURL);galleryOriginalURL=null;}
+});
+const showOrig=()=>{$('viewer-original').hidden=false};const hideOrig=()=>{$('viewer-original').hidden=true};
+for(const ev of ['pointerdown','touchstart'])$('compare').addEventListener(ev,showOrig,{passive:true});
+for(const ev of ['pointerup','pointercancel','pointerleave','touchend'])$('compare').addEventListener(ev,hideOrig,{passive:true});
+$('download').addEventListener('click',async e=>{
+ e.preventDefault();try{const src=$('viewer-image').src;const res=await fetch(src);if(!res.ok)throw Error('Could not fetch image');const blob=await res.blob();const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`OVA94-${Date.now()}.png`;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);toast('Image download started');}catch(e){toast(e.message)}
+});
+// Local image library: IndexedDB stores actual blobs, not temporary provider links.
+function db(){return new Promise((resolve,reject)=>{const q=indexedDB.open('ova-atlas-6',3);q.onupgradeneeded=()=>{const d=q.result;if(!d.objectStoreNames.contains('images'))d.createObjectStore('images',{keyPath:'id'});if(!d.objectStoreNames.contains('pending'))d.createObjectStore('pending',{keyPath:'id'});if(!d.objectStoreNames.contains('drafts'))d.createObjectStore('drafts',{keyPath:'id'});};q.onsuccess=()=>resolve(q.result);q.onerror=()=>reject(q.error)})}
+async function dbPendingPut(row){const d=await db();return new Promise((yes,no)=>{const tx=d.transaction('pending','readwrite');tx.objectStore('pending').put(row);tx.oncomplete=()=>{d.close();yes()};tx.onerror=()=>{d.close();no(tx.error)}})}
+async function dbPendingGet(){const d=await db();return new Promise((yes,no)=>{const tx=d.transaction('pending','readonly'),q=tx.objectStore('pending').get('active');q.onsuccess=()=>{d.close();yes(q.result||null)};q.onerror=()=>{d.close();no(q.error)}})}
+async function dbPendingDelete(){const d=await db();return new Promise((yes,no)=>{const tx=d.transaction('pending','readwrite');tx.objectStore('pending').delete('active');tx.oncomplete=()=>{d.close();yes()};tx.onerror=()=>{d.close();no(tx.error)}})}
+async function dbDraftPut(row){const d=await db();return new Promise((yes,no)=>{const tx=d.transaction('drafts','readwrite');tx.objectStore('drafts').put(row);tx.oncomplete=()=>{d.close();yes()};tx.onerror=()=>{d.close();no(tx.error)}})}
+async function dbDraftGet(){const d=await db();return new Promise((yes,no)=>{const tx=d.transaction('drafts','readonly'),q=tx.objectStore('drafts').get(DRAFT_ID);q.onsuccess=()=>{d.close();yes(q.result||null)};q.onerror=()=>{d.close();no(q.error)}})}
+async function dbPut(row){const d=await db();return new Promise((yes,no)=>{const tx=d.transaction('images','readwrite');tx.objectStore('images').put(row);tx.oncomplete=()=>{d.close();yes()};tx.onerror=()=>{d.close();no(tx.error)}})}
+async function dbDelete(id){const d=await db();return new Promise((yes,no)=>{const tx=d.transaction('images','readwrite');tx.objectStore('images').delete(id);tx.oncomplete=()=>{d.close();yes()};tx.onerror=()=>{d.close();no(tx.error)}})}
+async function dbAll(){const d=await db();return new Promise((yes,no)=>{const tx=d.transaction('images','readonly'),q=tx.objectStore('images').getAll();q.onsuccess=()=>{d.close();yes(q.result||[])};q.onerror=()=>{d.close();no(q.error)}})}
+// A public static site should also offer a deliberate, complete browser-data
+// deletion path. The app shell stays cached; personal IndexedDB rows do not.
+async function clearAllAtlasBrowserData(){
+  ++draftRevision;
+  clearTimeout(draftSaveTimer);
+  await draftWriteQueue.catch(()=>{});
+  const d=await db();
+  try {
+    await new Promise((resolve,reject)=>{
+      const tx=d.transaction(['images','pending','drafts'],'readwrite');
+      for(const store of ['images','pending','drafts'])tx.objectStore(store).clear();
+      tx.oncomplete=resolve;
+      tx.onerror=()=>reject(tx.error||Error('Local storage could not be erased'));
+      tx.onabort=()=>reject(tx.error||Error('Local storage erase was interrupted'));
+    });
+  }finally{d.close()}
+}
+$('erase-local-data').onclick=async()=>{
+  if(!window.confirm('ERASE ALL Atlas Collection images and drafts saved in this browser? Export important projects first. This cannot be undone.'))return;
+  const button=$('erase-local-data');button.disabled=true;
+  $('erase-note').textContent='Erasing Atlas data from this browser…';
+  try{
+    await clearAllAtlasBrowserData();
+    // Reload removes the active source image, painted mask, and result URLs
+    // from memory. Exported Photos/Files are never touched.
+    $('privacy-dialog').close();
+    window.location.reload();
+  }catch(e){
+    $('erase-note').textContent='Local erase failed. Browser storage may be unavailable.';
+    toast(e.message||'Could not erase local browser data');
+    button.disabled=false;
+  }
+};
+
+async function saveResult(){try{const src=state.results[state.selected];if(!src)return;const [out,original]=await Promise.all([fetch(src.url).then(x=>x.blob()),state.sourceBlob]);await dbPut({id:crypto.randomUUID?.()||String(Date.now()),created:Date.now(),name:state.previewType==='local'?`LOCAL COLOR PREVIEW ${state.selected+1} (NOT AI)`:`OVA94 TAKE ${state.selected+1}`,seriesId:state.seriesId,prompt:state.lastPrompt,blob:out,original});toast('Saved with original in Collection');$('save-local').textContent='♥ Saved to collection';}catch(e){toast(e.message||'Could not save')} }
+$('save-local').onclick=()=>void saveResult();
+let galleryURLs=[];
+async function renderGallery(){
+  try{
+    for(const u of galleryURLs)URL.revokeObjectURL(u);
+    galleryURLs=[];
+    const rows=(await dbAll()).sort((a,b)=>b.created-a.created);
+    $('gallery-count').textContent=rows.length+' IMAGES';
+    show('gallery-empty',!rows.length);
+    const grid=$('gallery-grid');grid.replaceChildren();
+    for(const row of rows){
+      const url=URL.createObjectURL(row.blob);galleryURLs.push(url);
+      const b=document.createElement('button');b.className='gallery-card';
+      b.innerHTML='<img alt="Saved anime image"><span></span>';
+      b.querySelector('img').src=url;
+      b.querySelector('span').textContent=row.name;
+      // Viewing the Collection MUST NOT alter the active Studio image, mask,
+      // undo history, or unsaved prompt.
+      b.onclick=()=>openGalleryViewer(row,url);
+      grid.appendChild(b);
+    }
+  }catch(e){toast('Collection unavailable: '+e.message)}
+}
+$('delete-saved').onclick=async()=>{
+  const row=viewerCollectionRow;
+  if(!row)return;
+  if(!window.confirm('Delete this saved image from this browser? This cannot be undone.'))return;
+  try{
+    await dbDelete(row.id);
+    viewerCollectionRow=null;
+    $('viewer').close();
+    await renderGallery();
+    toast('Saved image deleted from this browser');
+  }catch(e){toast('Could not delete saved image: '+e.message)}
+};
+void recoverPending();
+void recoverDraft();
+// Image and mask drafts persist in IndexedDB where the browser allows it. No upload is made.
+
+</script>
+
+<script>
+// Same-origin app-shell registration only. No images, project backups, or prompts
+// are ever sent to or cached by the service worker.
+(() => {
+  if (!('serviceWorker' in navigator)) return;
+  if (location.protocol !== 'https:' && location.hostname !== 'localhost') return;
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js', { scope:'./' }).catch(() => {
+      // App works online and as a local file even without service-worker support.
+    });
+  });
+})();
+</script>
+</body></html>

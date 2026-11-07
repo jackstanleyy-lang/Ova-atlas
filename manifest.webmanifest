@@ -1,0 +1,26 @@
+{
+  "id": "./",
+  "name": "OVA ATLAS \u2014 Image Studio",
+  "short_name": "OVA ATLAS",
+  "description": "Private local masked image previews. No paid AI generation.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0a0a0d",
+  "theme_color": "#0a0a0d",
+  "icons": [
+    {
+      "src": "./icons/atlas-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/atlas-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
