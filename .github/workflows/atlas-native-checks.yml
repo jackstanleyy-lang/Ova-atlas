@@ -1,7 +1,10 @@
-# Upload this file, then move it to .github/workflows/atlas-native-checks.yml.
+# Native source checks: run manually or when this workflow changes on main.
 # Embedded native source SHA256: 6439ae25899d03432795c2c847123838aec3d84651dfe84bc6475685249578d4
 name: Atlas Native Checks
 'on':
+  push:
+    branches: [main]
+    paths: ['.github/workflows/atlas-native-checks.yml']
   workflow_dispatch: null
 permissions:
   contents: read
