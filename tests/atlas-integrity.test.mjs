@@ -241,6 +241,33 @@ test('known catalog fingerprints block mismatched files without changing any rec
  assert.equal(api.checkLocalMatch({},'a'.repeat(64)),false,'unknown fingerprints require explicit user matching');
  assert.equal(JSON.stringify(record),before);
 });
+test('comparison references distinguish the untouched original, accepted base and current result',async()=>{
+ const api=visualAPI(),original=new Blob(['untouched original']),base=new Blob(['accepted input']),output=new Blob(['current result']);
+ const refs=api.comparisonReferences({blob:output,original,base,parentRevisionId:'accepted-take'});
+ assert.equal(refs.original.blob,original);assert.equal(refs.original.label,'Original reference');
+ assert.equal(refs.base.blob,base);assert.equal(refs.base.label,'Accepted edit base');assert.notEqual(refs.base.blob,output);
+ assert.deepEqual(Object.keys(api.comparisonReferences({blob:output,original})),['original'],'legacy entries do not invent a missing edit base');
+ const source=api.comparisonReferences({blob:original});assert.equal(source.original.blob,original);
+ assert.equal(await refs.original.blob.text(),'untouched original');assert.equal(await refs.base.blob.text(),'accepted input');assert.equal(await output.text(),'current result');
+});
+test('series history preserves branches, excludes unrelated images and identifies missing parents',()=>{
+ const api=visualAPI(),rows=[
+  {id:'root',seriesId:'',created:1,name:'Source'},
+  {id:'accepted',seriesId:'root',created:2,name:'Accepted take',revisionStatus:'accepted'},
+  {id:'left',seriesId:'root',created:3,name:'Left branch',parentRevisionId:'accepted'},
+  {id:'right',seriesId:'root',created:4,name:'Right branch',parentRevisionId:'accepted'},
+  {id:'orphan',seriesId:'root',created:5,name:'Imported take',parentRevisionId:'outside-browser'},
+  {id:'unrelated',seriesId:'other',created:6,name:'Accepted take'},
+  {id:'legacy',seriesId:'',created:7,name:'Legacy'},
+  {id:'other-legacy',seriesId:'',created:8,name:'Legacy'}
+ ];
+ const before=JSON.stringify(rows),history=api.seriesHistory(rows,rows[2]);
+ assert.deepEqual(Array.from(history,x=>x.id),['root','accepted','left','right','orphan']);
+ assert.equal(history.find(x=>x.id==='left').parentName,'Accepted take');assert.equal(history.find(x=>x.id==='right').parentName,'Accepted take');
+ assert.equal(history.find(x=>x.id==='left').current,true);assert.equal(history.find(x=>x.id==='orphan').parentMissing,true);assert.equal(history.find(x=>x.id==='orphan').parentName,null);
+ assert.deepEqual(Array.from(api.seriesHistory(rows,rows[6]),x=>x.id),['legacy'],'blank legacy series are not combined');
+ assert.equal(JSON.stringify(rows),before,'history is read-only');
+});
 
 test('duplicate import and on-demand scan are local, review-only, and preserve image IDs',()=>{
  for(const id of ['duplicate-scan','duplicate-cancel','duplicate-review','duplicate-status'])assert.match(html,new RegExp(`id="${id}"`));
