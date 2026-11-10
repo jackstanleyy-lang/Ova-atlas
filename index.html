@@ -995,7 +995,7 @@ function openViewer(i){
 }
 function openGalleryViewer(row,url){
   resetComparison();show('revision-actions',true);show('revision-status',true);$('reject-revision').hidden=!(row.original instanceof Blob);
-  $('revision-status').textContent=`${row.revisionStatus||'Source'}${row.parentRevisionId?' · based on a preserved earlier revision':''}. Accepting or rejecting never removes the original or other versions.`;
+  $('revision-status').textContent=`${row.revisionStatus||(row.original instanceof Blob?'Saved revision':'Source')}${row.parentRevisionId?' · based on a preserved earlier revision':''}. Accepting or rejecting never removes the original or other versions.`;
   viewerCollectionRow=row;
   if(galleryOriginalURL)URL.revokeObjectURL(galleryOriginalURL);
   galleryOriginalURL=row.original instanceof Blob?URL.createObjectURL(row.original):null;
@@ -1385,7 +1385,7 @@ function atlasFamilyCard(f){
 }
 function atlasFiltersFor(mode){
  const select=$('archive-filter');select.replaceChildren();
- const opts=mode==='catalog'?[['all','All types'],['ova','OVA art'],['source','Original sources'],['frame','Separated frames'],['sheet','Source sheets'],['video','Videos'],['photo','Photoreal'],['other','Other']]
+ const opts=mode==='catalog'&&INDEX.visualReview?[['all','All media'],['ova','Full-frame artwork'],['source','Photo references'],['sheet','Reference sheets']]:mode==='catalog'?[['all','All types'],['ova','OVA art'],['source','Original sources'],['frame','Separated frames'],['sheet','Source sheets'],['video','Videos'],['photo','Photoreal'],['other','Other']]
  :mode==='featured'?[['all','All images'],['built-in','Built-in images'],['imported','My imports']]
  :[['all','All characters']];
  for(const [value,label] of opts){const o=document.createElement('option');o.value=value;o.textContent=label;select.append(o);}
@@ -1461,7 +1461,7 @@ function atlasApplyPrivateIndex(next){
  INDEX=atlasAcceptPrivateIndex(next);
  catalogRecords=atlasCatalogRows(INDEX);atlasVisualFacets();
  recordById=new Map(catalogRecords.map(x=>[x.id,x]));
- $('vault-status').textContent=INDEX.visualReview?`${INDEX.items.length} visually reviewed records · ${INDEX.visualReview.pairs.length} suggested copy pairs · local images must be linked explicitly.`:INDEX.items.length.toLocaleString()+' archive records available only in this browser';
+ $('vault-status').textContent=INDEX.visualReview?`${INDEX.items.length} visually reviewed records · ${INDEX.visualReview.pairs.length} copy-review pairs · local images must be linked explicitly.`:INDEX.items.length.toLocaleString()+' archive records available only in this browser';
  $('vault-forget').hidden=false;
  document.querySelector('[data-atlas-mode="families"]').textContent=INDEX.families.length+' legacy references';document.querySelector('[data-atlas-mode="families"]').hidden=!INDEX.families.length;
  switchAtlasMode(INDEX.families.length?'families':'catalog');
