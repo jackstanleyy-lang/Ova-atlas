@@ -51,3 +51,14 @@ Next milestone: physical iPhone Safari acceptance for camera/Photos import, touc
 - Release path remains a review branch into existing `main` and GitHub Pages. Cost ceiling remains $0; no generation provider or paid infrastructure enabled.
 
 Remaining engineering milestone: physical iPhone Safari camera/Photos import, touch masking, offline reload and Home Screen acceptance; continue the remaining archive collections without treating partial duplicate coverage as a full census.
+
+
+## 2026-11-10 — v8.8.2 live acceptance
+
+- PR #4 merged into `main` as `e8bdbc2a0f861fd7983d20a1ec5501e5b1946c65`. GitHub static-integrity run `42865014335` and Pages run `42865013481` both succeeded.
+- Published HTML, service worker and manifest returned HTTP 200 and matched the tested checkout byte for byte. Live title reports v8.8.2.
+- Live Chromium loaded 250 private catalog records; filters returned 26 photographic references and 14 source/design sheets, with 36 records per catalog page. Catalog records remained after reload. No private data or imagery was added to the public repository.
+- Synthetic Collection import retained two unique originals and skipped one exact-byte copy. Rectangle and ellipse masks produced full-resolution previews. A saved accepted take and its child appeared with the original in a three-record history; the unrelated source remained separate. Original/base switching, side-by-side, wipe movement, and history navigation passed.
+- Downloaded child preview and mask both retained 2400×800. All 1,679,633 unmasked pixels exactly matched the accepted edit base. Editable-project active-image bytes exactly matched the accepted PNG and root-original bytes exactly matched the imported source; parent and series identifiers survived.
+- All four synthetic Collection records and the canonical catalog survived a live reload. At 337 CSS pixels, page and viewer had no horizontal overflow; history content also fit its container. This is Chromium width/zoom verification, not a physical iPhone test.
+- Physical iPhone Safari camera/Photos import, touch masking, offline reload and installed-PWA behavior remain unverified because no physical iPhone environment is available here. Remaining archive work is Swimwear, Fully Clothed and legacy collections; direct Rear View/Lookback and Kneeling/Prone inventories are complete.
