@@ -1,0 +1,21 @@
+name: OVA Atlas static integrity
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify-static-site:
+    if: ${{ github.event.repository.private == false }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify static source, iPhone import, masked previews and privacy
+        run: node --test tests/atlas-integrity.test.mjs
+      - name: Verify release audit and privacy safeguards
+        run: python3 -m unittest discover -s tests -p 'test_release_audit.py' -v
