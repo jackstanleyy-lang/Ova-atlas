@@ -12,6 +12,7 @@ A free, local image archive and masked color-preview studio. Published on GitHub
 - Export an editable project to preserve its source image, mask, and notes outside browser storage.
 - Load an `ova94-curation-1.1` visual-review JSON catalog privately. Browse art, photographic references, and source sheets separately; combine descriptive search, recorded tags, and suggested scene groups. Link each image explicitly from your device. Known SHA-256 fingerprints reject the wrong file.
 - Compare side by side, open the preserved original, or accept a saved revision and continue from it. Saved results retain their root original, edit base, parent revision, and series. Rejecting a revision keeps its files and history.
+- Choose the original reference or recorded edit base when comparing. Hold-to-compare, side-by-side and a wipe slider operate on unchanged local files. Revision history opens other takes in the same series and shows recorded parent links; missing parents are identified without inventing a relationship.
 
 Studio accepts sources up to 35 MB and 16 megapixels. Four full-resolution previews require a working copy no larger than 6 megapixels. Larger originals can remain unchanged in Collection. No silent resizing is performed in free local mode. These are color transformations, not AI generation.
 
@@ -20,6 +21,8 @@ Studio accepts sources up to 35 MB and 16 megapixels. Four full-resolution previ
 The public repository contains application code and app icons only. Images, drafts, imported catalogs, and labels remain in the browser's IndexedDB database. Private Library paths are metadata, not public image URLs. No paid provider or backend is enabled. Exact-copy review never automatically deletes images.
 
 The existing `ova-atlas-6` database upgrades in place, retaining IDs, originals, and saved edits. Safari may evict local storage; export important projects and keep source files backed up. Privacy settings offer a deliberate local erase action.
+
+An editable project includes its active image, root original, mask, notes, and saved parent/series identifiers. Other takes in that series remain in the browser where they were saved; the project file is not a complete Collection backup.
 
 ## Verification
 

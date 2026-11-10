@@ -37,3 +37,17 @@ The catalog and revision milestone follows below.
 - Cost boundary maintained: no paid infrastructure, generation credits, provider keys, archive exports or user images published. Every original remains preserved.
 
 Next milestone: physical iPhone Safari acceptance for camera/Photos import, touch masking, offline reload and Home Screen PWA; then continue the unreviewed archive collections toward the next canonical review batch.
+
+## 2026-11-10 — reference comparison and series browsing
+
+- Continued from verified `main` at `25916b8ef5e66b5b411f2c8460e9915ef7c47852`; preserved the existing app, database schema, hosting and native workflow.
+- Added explicit original-reference/edit-base selection. A recorded accepted edit base is offered only when its actual Blob is present; legacy records never gain an invented base.
+- Added a before/after wipe slider alongside hold and side-by-side comparison. Display choices do not change source or output bytes.
+- Added paged revision-history browsing within an exact recorded series. Parent links preserve branches; unrelated and ungrouped legacy images are kept separate. Missing earlier takes are identified as outside this browser.
+- Reference and history object URLs are cleaned up when the viewer closes, and pending history navigation cannot reopen a closed viewer.
+- Local verification: 20 JavaScript regressions and five release-audit tests passed. Thirteen simulated browser scenarios passed, including the 250-record canonical catalog, media filters, original/base switching, wipe movement, branch navigation, legacy fallback and original-preserving autosave.
+- Canonical private index updated in place from 174 to 250 individually inspected files: 210 illustrations, 26 photographic references, 14 source/design sheets. All 250 current identifiers, filenames and paths verified against fresh inventories.
+- Completed direct files in Rear View and Lookback (39) and Kneeling and Prone (16). Swimwear, Fully Clothed and legacy collections remain partial. Source-byte fingerprints cover 125 records, with 13 exact-copy groups within that checked subset. No original moved, edited, recompressed, published or deleted.
+- Release path remains a review branch into existing `main` and GitHub Pages. Cost ceiling remains $0; no generation provider or paid infrastructure enabled.
+
+Remaining engineering milestone: physical iPhone Safari camera/Photos import, touch masking, offline reload and Home Screen acceptance; continue the remaining archive collections without treating partial duplicate coverage as a full census.
