@@ -177,6 +177,71 @@ test('SHA-256 identifies identical bytes without conflating different files or e
  assert.deepEqual(rows.map(x=>x.id),['original','copy-1','different','legacy','copy-2'],'review does not remove or mutate rows');
 });
 
+function visualAPI(){
+ const context={globalThis:{crypto:webcrypto},Uint8ClampedArray,Math,Uint8Array,Map,Array,Blob};
+ vm.runInNewContext(pureScript,context);return context.globalThis.OVA_VISUAL_CATALOG;
+}
+function syntheticVisualCatalog(count=150){
+ const records=Array.from({length:count},(_,i)=>({key:`T${i}`,file_id:`file_synthetic_${String(i).padStart(8,'0')}`,filename:`test-${i}.png`,library_path:`/Lost 90s Anime OVA/Test/test-${i}.png`,collection:'Test',inspection_status:'visually_reviewed',media_kind:i<21?'photographic_reference':i<33?'illustration_source_sheet':'illustration',hair:i%2?'brunette bob':'blonde long hair',outfit:'blue jacket',pose:'standing',camera:'rear three quarter',setting:'test studio',interaction:'solo',tags:[i%2?'brunette':'blonde','rear-view'],series_group:i<2?'suggested-scene':null,possible_visual_duplicate_with:null,original_to_edit_lineage:'unverified'}));
+ return {schema_version:'ova94-curation-1.1',created_date:'2026-11-09',records,inspection_summary:{total_records:count,possible_visual_duplicate_pairs_review_only:count>1?[['T0','T1']]:[]}};
+}
+test('visual catalog imports 150 independent records without constructing public image URLs',()=>{
+ const raw=syntheticVisualCatalog(),before=JSON.stringify(raw),index=visualAPI().fromVisualReview(raw);
+ assert.equal(index.items.length,150);assert.equal(new Set(index.items.map(x=>x[0])).size,150);
+ assert.equal(index.items.filter(x=>x[5]==='illustration').length,117);
+ assert.equal(index.items.filter(x=>x[5]==='photographic_reference').length,21);
+ assert.equal(index.items.filter(x=>x[5]==='illustration_source_sheet').length,12);
+ assert.ok(index.items.every(x=>x[3]===''),'private paths are never turned into public URLs');
+ assert.equal(Object.keys(index.thumbnails).length,0);assert.equal(Object.keys(index.originals).length,0);
+ assert.equal(index.families.length,0,'scene suggestions never become confirmed character identities');
+ assert.equal(JSON.stringify(raw),before,'import does not alter the canonical source');
+});
+test('visual catalog rejects ambiguous identifiers, malformed paths, counts and dangling suggestions',()=>{
+ const api=visualAPI();
+ for(const mutate of [
+  x=>x.records[1].file_id=x.records[0].file_id,
+  x=>x.records[1].key=x.records[0].key,
+  x=>x.records[1].library_path='/Lost 90s Anime OVA/../secret.png',
+  x=>x.records[1].filename='mismatched.png',
+  x=>x.records[0].tags='not an array',
+  x=>x.records[0].media_kind='guessed identity',
+  x=>x.inspection_summary.total_records=999,
+  x=>x.inspection_summary.possible_visual_duplicate_pairs_review_only=[['T0','missing']],
+  x=>x.records[0].possible_visual_duplicate_with='missing',
+  x=>x.schema_version='unknown'
+ ]){const raw=syntheticVisualCatalog(3);mutate(raw);assert.throws(()=>api.fromVisualReview(raw));}
+});
+test('visual similarity suggestions preserve both records and never assert byte identity',()=>{
+ const raw=syntheticVisualCatalog(3),index=visualAPI().fromVisualReview(raw);
+ assert.equal(index.visualReview.pairs.length,1);assert.equal(index.items.length,3);
+ assert.ok(index.visualReview.records.every(r=>r.original_to_edit_lineage==='unverified'));
+ assert.ok(index.visualReview.records.every(r=>!('sha256' in r)));
+ assert.notEqual(index.items[0][0],index.items[1][0]);
+});
+test('visual browsing combines recorded tags, scene suggestions and descriptive search',()=>{
+ const api=visualAPI(),rows=api.fromVisualReview(syntheticVisualCatalog(5)).visualReview.records;
+ assert.deepEqual(Array.from(rows.filter(r=>api.matches(r,{search:'blue jacket',tag:'brunette',group:'suggested-scene'})),r=>r.key),['T1']);
+ assert.equal(rows.filter(r=>api.matches(r,{tag:'not cataloged'})).length,0);
+ assert.equal(rows.filter(r=>api.matches(r,{search:'rear three quarter'})).length,5);
+});
+test('continuing an accepted revision keeps the original, parent and complete series',async()=>{
+ const api=visualAPI(),original=new Blob(['original bytes']),edited=new Blob(['accepted edit']);
+ const row={id:'revision-two',blob:edited,original,seriesId:'series-one',sourceRecordId:'local-source'};
+ const next=api.revisionContext(row);assert.equal(next.image,edited);assert.equal(next.original,original);
+ assert.equal(next.seriesId,'series-one');assert.equal(next.parentRevisionId,'revision-two');assert.equal(next.sourceRecordId,'local-source');
+ const restart=api.revisionContext(row,true);assert.equal(restart.image,original);assert.equal(restart.parentRevisionId,null);assert.equal(restart.seriesId,'series-one');
+ const legacy=api.revisionContext({id:'legacy',blob:original});assert.equal(legacy.original,original);assert.equal(legacy.seriesId,'legacy');
+ assert.equal(await original.text(),'original bytes');assert.equal(await edited.text(),'accepted edit');
+});
+test('known catalog fingerprints block mismatched files without changing any record',()=>{
+ const api=visualAPI(),record={sha256:'a'.repeat(64)},before=JSON.stringify(record);
+ assert.equal(api.checkLocalMatch(record,'a'.repeat(64)),true);
+ assert.throws(()=>api.checkLocalMatch(record,'b'.repeat(64)),/does not match/);
+ assert.throws(()=>api.checkLocalMatch(record,''),/does not match/);
+ assert.equal(api.checkLocalMatch({},'a'.repeat(64)),false,'unknown fingerprints require explicit user matching');
+ assert.equal(JSON.stringify(record),before);
+});
+
 test('duplicate import and on-demand scan are local, review-only, and preserve image IDs',()=>{
  for(const id of ['duplicate-scan','duplicate-cancel','duplicate-review','duplicate-status'])assert.match(html,new RegExp(`id="${id}"`));
  assert.match(html,/sha256=await COLLECTION\.sha256Hex\(file\)/);

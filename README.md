@@ -10,6 +10,8 @@ A free, local image archive and masked color-preview studio. Published on GitHub
 - Create four local color previews, compare against the source, and save selected results with their original and series ID.
 - Add manual appearance, outfit, pose, and camera labels; combine filters or review exact SHA-256 byte matches.
 - Export an editable project to preserve its source image, mask, and notes outside browser storage.
+- Load an `ova94-curation-1.1` visual-review JSON catalog privately. Browse art, photographic references, and source sheets separately; combine descriptive search, recorded tags, and suggested scene groups. Link each image explicitly from your device. Known SHA-256 fingerprints reject the wrong file.
+- Compare side by side, open the preserved original, or accept a saved revision and continue from it. Saved results retain their root original, edit base, parent revision, and series. Rejecting a revision keeps its files and history.
 
 Studio accepts sources up to 35 MB and 16 megapixels. Four full-resolution previews require a working copy no larger than 6 megapixels. Larger originals can remain unchanged in Collection. No silent resizing is performed in free local mode. These are color transformations, not AI generation.
 
