@@ -279,3 +279,86 @@ test('duplicate import and on-demand scan are local, review-only, and preserve i
  assert.match(html,/const filtered=COLLECTION\.filterRows\(rows,currentGalleryCriteria\(\)\)\.filter/);
  assert.doesNotMatch(html,/delete\(.*sha256/i,'fingerprint lookup never deletes originals');
 });
+
+const appScript=scripts.find(script=>script.includes('const state ='));
+function appSection(start,end){
+ const from=appScript.indexOf(start),to=appScript.indexOf(end,from+start.length);
+ assert.ok(from>=0&&to>from,`production section exists: ${start}`);
+ return appScript.slice(from,to);
+}
+function mobileViewport(){
+ const elements={'studio-tab':{hidden:true},'gallery-tab':{hidden:true},'archive-tab':{hidden:false}};
+ const frames=[],strokes=[{shape:'rect',points:[{x:50,y:70},{x:200,y:180}],size:20}];
+ const state={width:2400,height:800,view:{s:.5,x:12,y:20},strokes};
+ const stage={get clientWidth(){return elements['studio-tab'].hidden?0:337;},get clientHeight(){return elements['studio-tab'].hidden?0:440;}};
+ const context={state,stage,Math,Number,requestAnimationFrame(fn){frames.push(fn);},show(id,visible){elements[id].hidden=!visible;},window:{scrollTo(){}},document:{querySelectorAll(){return [];}},renderGallery(){},renderArchive(){},applyView(){}};
+ vm.createContext(context);
+ vm.runInContext(`let stageNeedsFit=false;\n${appSection('function fitView()', '\nfunction capView')}\n${appSection('function setTab(tab)', "\ndocument.querySelectorAll('.tab')")}`,context);
+ return {context,elements,frames,state,strokes,paint(){while(frames.length)frames.shift()();}};
+}
+test('mobile draft restored behind Archive gets a valid canvas when Studio opens',()=>{
+ const screen=mobileViewport(),before={...screen.state.view};
+ screen.context.fitView();
+ assert.deepEqual({...screen.state.view},before,'hidden layout must not replace a valid view with zero scale');
+ screen.context.setTab('studio');screen.paint();
+ assert.equal(screen.state.view.s,337/2400);
+ assert.ok(Number.isFinite(screen.state.view.x)&&Number.isFinite(screen.state.view.y));
+ assert.equal(screen.state.strokes,screen.strokes,'fitting never changes the recovered mask');
+});
+test('mobile tab changes preserve a valid user zoom until a hidden resize needs fitting',()=>{
+ const screen=mobileViewport();screen.elements['studio-tab'].hidden=false;
+ const before={...screen.state.view};
+ screen.context.setTab('gallery');screen.context.setTab('studio');screen.paint();
+ assert.deepEqual({...screen.state.view},before);
+ screen.context.setTab('archive');screen.context.fitView();screen.context.setTab('studio');screen.paint();
+ assert.equal(screen.state.view.s,337/2400);
+});
+test('image export format follows the actual Blob MIME without modifying its bytes',async()=>{
+ const context={globalThis:{},Uint8ClampedArray,Math};vm.runInNewContext(pureScript,context);
+ const info=context.globalThis.OVA_COLLECTION_TOOLS.exportImageInfo;
+ for(const [type,extension] of [['image/png','png'],['image/jpeg','jpg'],['image/webp','webp'],['image/gif','gif'],['image/avif','avif'],['image/heic','heic']]){
+  const image=new Blob(['untouched source bytes'],{type}),result=info(image,'OVA94-test');
+  assert.equal(result.name,`OVA94-test.${extension}`);assert.equal(result.type,type);
+  assert.equal(await image.text(),'untouched source bytes');
+ }
+ assert.equal(info(new Blob(['bytes']),'fallback').name,'fallback.bin');
+});
+function mobileDraft(){
+ const timers=new Map(),saved=[],listeners={},fields={prompt:{value:'First edit'},'draft-status':{textContent:''}};
+ const original=new Blob(['original']),image=new Blob(['current']);let timer=0;
+ const state={sourceBlob:image,originalBlob:original,sourceName:'Fixture',width:600,height:800,strokes:[{points:[{x:2,y:3}],size:12,erase:true,shape:'brush'}],lastRecipe:'ova',brush:42,mode:'erase',tool:'brush',seriesId:'series-1',parentRevisionId:'parent-1',sourceRecordId:'source-1'};
+ const context={state,Date,Promise,Map,$:id=>fields[id],setTimeout(fn){timers.set(++timer,fn);return timer;},clearTimeout(id){timers.delete(id);},dbDraftPut:async row=>{saved.push(row);},toast(){},document:{visibilityState:'visible',addEventListener(type,fn){listeners[type]=fn;}},window:{addEventListener(type,fn){listeners[type]=fn;}}};
+ vm.createContext(context);
+ vm.runInContext(`let draftSaveTimer=null,draftRevision=0,draftWriteQueue=Promise.resolve(),restoringDraft=false,draftStorageWarned=false;const DRAFT_ID='current';\n${appSection('function draftStatus(', '\nfunction validDraftStrokes(')}`,context);
+ return {context,state,fields,timers,saved,listeners,image,original};
+}
+test('mobile background flush writes the newest edit and keeps original lineage and erase mode',async()=>{
+ const draft=mobileDraft();draft.context.scheduleDraftSave();draft.fields.prompt.value='Latest edit';
+ await draft.context.flushDraftSave();
+ assert.equal(draft.timers.size,0);assert.equal(draft.saved.length,1);
+ const row=draft.saved[0];assert.equal(row.prompt,'Latest edit');assert.equal(row.mode,'erase');
+ assert.equal(row.original,draft.original);assert.equal(row.image,draft.image);assert.equal(row.parentRevisionId,'parent-1');assert.equal(row.seriesId,'series-1');
+ assert.equal(row.strokes[0].erase,true);
+});
+test('an older pending draft write cannot finish after the background snapshot',async()=>{
+ const draft=mobileDraft();let release,started;
+ const firstStarted=new Promise(resolve=>{started=resolve;});
+ const firstGate=new Promise(resolve=>{release=resolve;});
+ draft.context.dbDraftPut=async row=>{if(!draft.saved.length){draft.saved.push(row);started();await firstGate;}else draft.saved.push(row);};
+ draft.context.scheduleDraftSave();const [id,callback]=draft.timers.entries().next().value;draft.timers.delete(id);callback();await firstStarted;
+ draft.fields.prompt.value='Newest background edit';const flushing=draft.context.flushDraftSave();release();await flushing;
+ assert.deepEqual(draft.saved.map(row=>row.prompt),['First edit','Newest background edit']);
+});
+test('mobile visibility and page-hide events flush pending work without waiting for the timer',async()=>{
+ for(const type of ['visibilitychange','pagehide']){
+  const draft=mobileDraft();let complete;const written=new Promise(resolve=>{complete=resolve;});
+  draft.context.dbDraftPut=async row=>{draft.saved.push(row);complete();};
+  draft.context.scheduleDraftSave();draft.fields.prompt.value='Last edit before leaving';
+  if(type==='visibilitychange'){
+   draft.listeners[type]();assert.equal(draft.saved.length,0,'foreground transitions keep the normal debounce');
+   draft.context.document.visibilityState='hidden';
+  }
+  draft.listeners[type]();await written;
+  assert.equal(draft.timers.size,0);assert.equal(draft.saved[0].prompt,'Last edit before leaving');
+ }
+});
