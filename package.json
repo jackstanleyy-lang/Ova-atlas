@@ -1,0 +1,13 @@
+{
+  "name": "ova-atlas-engineering-checks",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Development-only verification. The static app has no runtime dependencies.",
+  "scripts": {
+    "test": "node --test tests/atlas-integrity.test.mjs tests/collection-backup.integration.mjs"
+  },
+  "devDependencies": {
+    "fake-indexeddb": "6.2.8",
+    "jsdom": "31.0.0"
+  }
+}
