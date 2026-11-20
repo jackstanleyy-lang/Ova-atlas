@@ -5,12 +5,16 @@ import {join} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {dirname} from 'node:path';
 import vm from 'node:vm';
+import {execFileSync} from 'node:child_process';
 import {webcrypto} from 'node:crypto';
 const root=join(dirname(fileURLToPath(import.meta.url)),'..');
 const html=readFileSync(join(root,'index.html'),'utf8');
 const sw=readFileSync(join(root,'sw.js'),'utf8');
 const manifest=JSON.parse(readFileSync(join(root,'manifest.webmanifest'),'utf8'));
-const scripts=[...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)].filter(m=>!m[0].includes('type="application/json"')).map(m=>m[1]);
+const scriptTags=[...html.matchAll(/<script(\s[^>]*)?>([\s\S]*?)<\/script>/gi)].filter(m=>!m[0].includes('type="application/json"'));
+const scripts=scriptTags.filter(m=>!/\ssrc\s*=/i.test(m[1]||'')).map(m=>m[2]);
+// The only approved non-inline script: the same-origin, local-only Draw Things importer module.
+const IMPORTER='./drawthings_local_import.mjs';
 const pureScript=scripts.find(s=>s.includes('root.OVA_LOCAL_PREVIEW'));
 
 test('app is self-contained, static, and syntactically valid',()=>{
@@ -18,7 +22,17 @@ test('app is self-contained, static, and syntactically valid',()=>{
   assert.ok(pureScript);
   for(const [i,script] of scripts.entries()) new vm.Script(script,{filename:`inline-${i}.js`});
   new vm.Script(sw,{filename:'sw.js'});
-  assert.doesNotMatch(html,/<script[^>]+src\s*=/i,'no external scripts');
+  // Exactly one script may load from a file, and it must be the approved same-origin local module.
+  const srcTags=[...html.matchAll(/<script\b[^>]*\bsrc\s*=[^>]*>/gi)].map(m=>m[0]);
+  assert.deepEqual(srcTags,[`<script type="module" src="${IMPORTER}">`],'only the local importer module may use a script src');
+  assert.match(html,new RegExp(`<script type="module" src="${IMPORTER.replace(/[.\/]/g,'\\$&')}"></script></body>`),'importer tag is empty and loads last');
+  assert.doesNotMatch(html,/<script[^>]+src\s*=\s*["']?(?:[a-z][a-z0-9+.-]*:|\/\/|\/)/i,'no remote, protocol-relative or root-absolute scripts');
+  const importerPath=join(root,IMPORTER);
+  assert.ok(existsSync(importerPath),'approved importer module exists in the repository');
+  execFileSync(process.execPath,['--check',importerPath],{stdio:'pipe'});
+  const importer=readFileSync(importerPath,'utf8');
+  assert.doesNotMatch(importer,/^\s*import\b|\bimport\s*\(/m,'importer pulls in no further modules');
+  assert.doesNotMatch(importer,/\bfetch\s*\(|XMLHttpRequest|WebSocket|EventSource|sendBeacon|https?:\/\/|\beval\s*\(|new Function/,'importer has no network or dynamic-code path');
   assert.doesNotMatch(html,/<link[^>]+href=["']https?:/i,'no external styles/assets');
   assert.ok(existsSync(join(root,'.nojekyll')));
   assert.match(html,/data-free-only="true"/i);
@@ -79,7 +93,11 @@ test('service worker caches only the named app shell and never intercepts user d
   const worker={registration:{scope},location:{origin:'https://example.org'},clients:{async claim(){}},async skipWaiting(){},addEventListener(name,handler){handlers[name]=handler;}};
   vm.runInNewContext(sw,{self:worker,caches,URL,fetch:async()=>({ok:true,clone(){return this;}})});
   let installation;handlers.install({waitUntil(p){installation=p;}});await installation;
-  assert.equal(cacheRows.size,5,'only listed shell assets are cached');
+  assert.deepEqual([...cacheRows.keys()].sort(),[
+    'drawthings_local_import.mjs','icons/atlas-180.png','icons/atlas-192.png','icons/atlas-512.png','index.html','manifest.webmanifest'
+  ].map(p=>scope+p),'exactly the six named shell assets are cached');
+  for(const p of ['./index.html','./manifest.webmanifest','./icons/atlas-180.png','./icons/atlas-192.png','./icons/atlas-512.png',IMPORTER])
+    assert.ok(existsSync(join(root,p)),`cached shell asset ${p} exists`);
   let activation;handlers.activate({waitUntil(p){activation=p;}});await activation;
   assert.deepEqual(removed,['ova-atlas-shell-v8.4','ova-atlas-shell-v8.5','ova-atlas-shell-v8.6','ova-atlas-shell-v8.7']);
   const fire=(url,{method='GET',mode='cors'}={})=>{
@@ -93,10 +111,17 @@ test('service worker caches only the named app shell and never intercepts user d
     ['https://example.org/Ova-atlas/personal-photo.png',{}],
     ['https://example.org/Ova-atlas/index.html?token=secret',{mode:'navigate'}],
     ['https://private.example/secret.png',{}],
-    ['blob:https://example.org/deadbeef',{}]
+    ['blob:https://example.org/deadbeef',{}],
+    ['https://example.org/Ova-atlas/project.sqlite3',{}],
+    ['https://example.org/Ova-atlas/drawthings_local_import.mjs?v=2',{}],
+    ['https://cdn.example/drawthings_local_import.mjs',{}],
+    ['https://example.org/Ova-atlas/drawthings_local_import.mjs',{method:'POST'}]
   ])assert.equal(fire(url,opts).responded,false,`must not intercept ${url}`);
   assert.equal(fire(`${scope}index.html`,{mode:'navigate'}).responded,true);
   assert.equal(fire(`${scope}icons/atlas-192.png`).responded,true);
+  assert.equal(fire(`${scope}drawthings_local_import.mjs`).responded,true);
+  const before=cacheRows.size;await fire(`${scope}drawthings_local_import.mjs`).promise;
+  assert.equal(cacheRows.size,before,'serving the module adds no runtime cache entries');
 });
 
 
