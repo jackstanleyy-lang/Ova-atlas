@@ -280,6 +280,120 @@ test('duplicate import and on-demand scan are local, review-only, and preserve i
  assert.doesNotMatch(html,/delete\(.*sha256/i,'fingerprint lookup never deletes originals');
 });
 
+function backupAPI(){
+ const context={globalThis:{crypto:webcrypto},Blob,TextEncoder,TextDecoder,Uint8Array,DataView,Uint8ClampedArray,Math};
+ vm.runInNewContext(pureScript,context);return context.globalThis.OVA_COLLECTION_BACKUP;
+}
+function backupFixture(){
+ const original=new Blob(['untouched-original'],{type:'image/png'}),amber=new Blob(['accepted-amber'],{type:'image/png'}),violet=new Blob(['child-violet'],{type:'image/png'});
+ return [
+  {id:'root',name:'Original',created:1,seriesId:'',prompt:'',blob:original,tags:{hairColor:'brunette'}},
+  {id:'accepted',name:'Accepted take',created:2,seriesId:'root',sourceRecordId:'root',blob:amber,original,base:original,revisionStatus:'accepted'},
+  {id:'child',name:'Child',created:3,seriesId:'root',parentRevisionId:'accepted',sourceRecordId:'root',blob:violet,original,base:amber,prompt:'Keep the source',tags:{pose:'seated'}},
+  {id:'sibling',name:'Sibling',created:4,seriesId:'root',parentRevisionId:'accepted',blob:new Blob(['sibling-teal'],{type:'image/webp'}),original,base:new Blob(['accepted-amber'],{type:'image/png'})},
+  {id:'legacy',name:'Independent source',created:0,blob:new Blob(['legacy-bytes'],{type:'image/jpeg'})}
+ ];
+}
+async function forgedBackup(result,mutate){
+ const manifest=JSON.parse(JSON.stringify(result.manifest));mutate(manifest);
+ const bytes=new TextEncoder().encode(JSON.stringify(manifest)),header=new Uint8Array(44);header.set(new TextEncoder().encode('OVA94B01'));new DataView(header.buffer).setUint32(8,bytes.length,true);
+ header.set(new Uint8Array(await webcrypto.subtle.digest('SHA-256',bytes)),12);
+ const oldLength=new DataView(await result.file.slice(0,44).arrayBuffer()).getUint32(8,true);
+ return new Blob([header,bytes,result.file.slice(44+oldLength)]);
+}
+
+test('Collection backup round-trip preserves original bytes, bases, labels, branches and legacy records',async()=>{
+ const api=backupAPI(),rows=backupFixture(),result=await api.create(rows),loaded=await api.verify(result.file);
+ assert.equal(loaded.rows.length,5);assert.equal(loaded.assetCount,5,'shared originals and bases are stored once by actual SHA-256');
+ for(let i=0;i<rows.length;i++){
+  const out=loaded.rows[i];for(const field of ['blob','original','base']){
+   if(!rows[i][field]){assert.equal(field in out,false,'do not invent a legacy original or base');continue;}
+   assert.deepEqual(new Uint8Array(await out[field].arrayBuffer()),new Uint8Array(await rows[i][field].arrayBuffer()));assert.equal(out[field].type,rows[i][field].type);
+  }
+  for(const field of ['id','name','seriesId','parentRevisionId','sourceRecordId','revisionStatus','prompt'])assert.equal(out[field],rows[i][field]);
+ }
+ assert.equal(loaded.rows[2].tags.pose,'seated');assert.equal(rows[0].sha256,undefined,'export never mutates stored metadata');
+ const total=44+new TextEncoder().encode(JSON.stringify(result.manifest)).length+result.manifest.assets.reduce((n,a)=>n+a.size,0);
+ assert.equal(result.file.size,total,'binary payload has no base64 expansion');
+});
+
+test('Collection backup verifies both metadata and every image before accepting a restore',async()=>{
+ const api=backupAPI(),result=await api.create(backupFixture()),bytes=new Uint8Array(await result.file.arrayBuffer());
+ const meta=bytes.slice();meta[50]^=1;await assert.rejects(api.verify(new Blob([meta])),/metadata checksum/);
+ const image=bytes.slice();image[image.length-1]^=1;await assert.rejects(api.verify(new Blob([image])),/image checksum/);
+ await assert.rejects(api.verify(result.file.slice(0,result.file.size-1)),/damaged|truncated/);
+ await assert.rejects(api.verify(new Blob([result.file,'extra'])),/trailing/);
+});
+
+test('Collection backup rejects ambiguous IDs, missing assets, circular lineage and unsafe metadata',async()=>{
+ const api=backupAPI(),result=await api.create(backupFixture());
+ for(const [change,expected] of [
+  [m=>m.records.push(m.records[0]),/duplicate record/],
+  [m=>m.records[0].files.blob.sha256='a'.repeat(64),/missing or invalid image/],
+  [m=>{m.records[0].metadata.parentRevisionId='child';m.records[1].metadata.parentRevisionId='root';},/circular/],
+  [m=>m.version=99,/version/],
+  [m=>m.records[0].metadata.tags={pose:12},/visual labels/],
+  [m=>m.records[0].metadata.blob='not-an-asset',/backup assets/],
+  [m=>m.records[0].metadata.extra=JSON.parse('{"__proto__":{"polluted":true}}'),/metadata field/],
+  [m=>m.records[0].files.blob.type='text/html',/missing or invalid image/]
+ ])await assert.rejects(api.verify(await forgedBackup(result,change)),expected);
+ assert.equal({}.polluted,undefined);
+});
+
+test('Collection backup cancellation leaves its input records untouched',async()=>{
+ const api=backupAPI(),rows=backupFixture(),result=await api.create(rows),loaded=await api.verify(result.file);
+ let cancelled=false;
+ await assert.rejects(api.create(rows,{isCancelled:()=>cancelled,onProgress:()=>{cancelled=true}}),/Cancelled/);
+ cancelled=false;await assert.rejects(api.verify(result.file,{isCancelled:()=>cancelled,onProgress:()=>{cancelled=true}}),/Cancelled/);
+ await assert.rejects(api.planRestore(loaded,[],{isCancelled:()=>true}),/Cancelled/);
+ assert.deepEqual(rows.map(r=>r.id),['root','accepted','child','sibling','legacy']);assert.equal(await rows[0].blob.text(),'untouched-original');
+});
+
+test('Collection backup enforces memory and container bounds without resizing files',async()=>{
+ const api=backupAPI();await assert.rejects(api.create([]),/empty/);
+ const row=backupFixture()[0],large=new Blob(['tiny'],{type:'image/png'});Object.defineProperty(large,'size',{value:api.LIMITS.asset+1});
+ await assert.rejects(api.create([{...row,blob:large}]),/64 MB/);
+ await assert.rejects(api.create(Array(api.LIMITS.records+1).fill(row)),/10,000/);
+ await assert.rejects(api.create([{...row,prompt:'x'.repeat(32001)}]),/too long/);
+ await assert.rejects(api.verify(new Blob(['not-a-backup'])),/not a supported/);
+ assert.equal(await row.blob.text(),'untouched-original');
+});
+
+test('Collection restore preserves IDs in an empty browser and is idempotent for the same backup',async()=>{
+ const api=backupAPI(),loaded=await api.verify((await api.create(backupFixture())).file),first=await api.planRestore(loaded,[]);
+ assert.deepEqual(Array.from(first.rows,r=>r.id),['root','accepted','child','sibling','legacy']);assert.equal(first.isolated,false);
+ const repeated=await api.planRestore(loaded,first.rows);assert.equal(repeated.rows.length,0);assert.equal(repeated.skipped,5);
+ const another={...first.rows[0],id:'separate-record',name:'Same bytes, independent record'};
+ const plan=await api.planRestore(loaded,[another]);assert.equal(plan.rows.length,5,'byte equality never collapses independent records or series');
+});
+
+test('changed accepted takes trigger a separate complete snapshot with correct branch links',async()=>{
+ const api=backupAPI(),loaded=await api.verify((await api.create(backupFixture())).file);
+ const accepted={...loaded.rows[1],name:'Locally updated accepted take',blob:new Blob(['local-edit'],{type:'image/png'})},existing=[loaded.rows[0],accepted];
+ const plan=await api.planRestore(loaded,existing);assert.equal(plan.isolated,true);assert.equal(plan.rows.length,5);
+ const byName=new Map(plan.rows.map(r=>[r.name,r]));const root=byName.get('Original'),parent=byName.get('Accepted take');
+ for(const name of ['Child','Sibling']){assert.equal(byName.get(name).parentRevisionId,parent.id);assert.equal(byName.get(name).seriesId,root.id);}
+ assert.equal(byName.get('Child').sourceRecordId,root.id);assert.equal(accepted.name,'Locally updated accepted take');assert.equal(await accepted.blob.text(),'local-edit');
+ const again=await api.planRestore(loaded,[...existing,...plan.rows]);assert.equal(again.rows.length,0);assert.equal(again.skipped,5);
+ const changed=plan.rows.map((r,i)=>i===2?{...r,name:'Changed restored label'}:r),next=await api.planRestore(loaded,[...existing,...changed]);
+ assert.equal(next.rows.length,5);assert.equal(next.isolated,true);assert.notEqual(next.rows[0].id,plan.rows[0].id,'changed restored records are also preserved');
+ assert.equal((await api.planRestore(loaded,[...existing,...changed,...next.rows])).rows.length,0);
+});
+
+test('restore isolates missing parent references and keeps external source metadata intact',async()=>{
+ const api=backupAPI(),rows=backupFixture();rows[2]={...rows[2],parentRevisionId:'missing-parent',sourceRecordId:'external-catalog-source'};
+ const loaded=await api.verify((await api.create(rows)).file),existing=[{...loaded.rows[0],name:'Changed source'},{...loaded.rows[1],id:'missing-parent',name:'Unrelated local take'}];
+ const plan=await api.planRestore(loaded,existing),child=plan.rows.find(r=>r.name==='Child');
+ assert.notEqual(child.parentRevisionId,'missing-parent');assert.ok(!plan.rows.some(r=>r.id===child.parentRevisionId));assert.equal(child.sourceRecordId,'external-catalog-source');
+});
+
+test('restore collision checks include original and edit-base bytes rather than trusting cached hashes',async()=>{
+ const api=backupAPI(),loaded=await api.verify((await api.create(backupFixture())).file);
+ const changed=loaded.rows.map(r=>r.id==='child'?{...r,base:new Blob(['different base'],{type:r.base.type})}:r);
+ assert.equal((await api.planRestore(loaded,changed)).isolated,true);
+ const stale=loaded.rows.map(r=>({...r,sha256:'0'.repeat(64)}));assert.equal((await api.planRestore(loaded,stale)).skipped,5,'actual file bytes establish equality');
+});
+
 const appScript=scripts.find(script=>script.includes('const state ='));
 function appSection(start,end){
  const from=appScript.indexOf(start),to=appScript.indexOf(end,from+start.length);

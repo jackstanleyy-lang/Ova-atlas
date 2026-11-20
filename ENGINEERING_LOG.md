@@ -72,3 +72,13 @@ Remaining engineering milestone: physical iPhone Safari camera/Photos import, to
 - Verification: 26 JavaScript regressions and five Python release-audit tests passed after reconciliation. New regressions execute the production fit, tab, export and draft-save functions and cover hidden-stage recovery, zoom preservation, byte-preserving format metadata, lifecycle callbacks and pending-write ordering. `git diff --check` passed.
 - The isolated 393-pixel Chromium preview loaded Archive and Collection. The browser file-upload API repeatedly stalled before completing a synthetic JPEG import, so full import/download/reload acceptance is not claimed for this candidate. Physical iPhone Safari testing remains outstanding.
 - The database name/schema, original images, private catalog, native workflow and free-only provider boundary are unchanged. Synthetic fixtures and isolated preview storage are excluded from Git. Candidate is prepared for review; not merged or deployed.
+
+
+## 2026-11-10 — complete Collection backup and restore candidate
+
+- Found and re-verified the existing mobile recovery/export PR #6: 26 JavaScript and five Python tests passed. Merged it into `main` as `98498ab429e33d019168d0b99198514364cfded2` and retained every fix in this candidate. The combined release is v8.8.4.
+- Added a private binary Collection backup with raw original/current/base files, manual labels and recorded series/parent links. Shared byte-identical payloads are stored once without merging records. Active drafts, Archive images and private catalog are explicitly outside Collection backup scope.
+- Restore validates the manifest and every payload checksum before review or writes. Repeat imports skip unchanged records. Changed ID collisions preserve the incoming snapshot under consistent new IDs, retaining branches and orphan semantics without overwriting accepted local takes.
+- Restore uses one append-only IndexedDB transaction. Failure aborts all new writes, including an earlier queued image; no successful-memory fallback is reported. Changed Collection state after preview requires another review.
+- Local verification: 35 JavaScript regressions, seven real-DOM/fake-IndexedDB integration tests and five Python release-audit tests passed. Tests include byte/MIME round trips, corruption, metadata validation, lineage, repeated restores, cancellation, quota rollback and concurrent change review.
+- Added pinned development-only test dependencies and CI integration coverage; the app still has no runtime dependencies or separate build. Database name/schema, native workflow and provider boundary are unchanged. Candidate is not yet published; live acceptance follows CI and Pages verification.
