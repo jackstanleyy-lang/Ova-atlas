@@ -16,6 +16,7 @@ A free, local image archive and masked color-preview studio. Published on GitHub
 - Choose the original reference or recorded edit base when comparing. Hold-to-compare, side-by-side and a wipe slider operate on unchanged local files. Revision history opens other takes in the same series and shows recorded parent links; missing parents are identified without inventing a relationship.
 
 Studio accepts sources up to 35 MB and 16 megapixels. Four full-resolution previews require a working copy no larger than 6 megapixels. Larger originals can remain unchanged in Collection. No silent resizing is performed in free local mode. These are color transformations, not AI generation.
+- Generate with Draw Things (v8.9): in Studio choose a preset (Fidelity, Fix masked area, Continue, Retry, More fidelity) and tap Generate. On iPhone/iPad, Atlas writes a Draw Things script containing your exact image, mask and settings; add it in Draw Things › Scripts and run it, then tap Import result and pick the `ova-atlas-<job>.png` file from Files › Draw Things › Pictures. Results enter Collection in QA HOLD with their original, edit base, mask and requested settings; nothing is accepted automatically. On a computer running Draw Things' HTTP API server, `node tools/drawthings_http_bridge.mjs` enables direct unmasked image-to-image generation from Atlas in the same computer's browser.
 
 ## Privacy and preservation
 
