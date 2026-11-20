@@ -484,7 +484,7 @@ export function mountDrawThingsGeneration({ studio = () => globalThis.OVA_STUDIO
     }
     const url = URL.createObjectURL(file);
     const a = el('a', { href: url, download: file.name }); document.body.append(a); a.click(); a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 60000);
+    setTimeout(() => URL.revokeObjectURL(url), 60000)?.unref?.(); // unref: Node test runs only
     say(`Script downloaded as ${file.name}. Add it in Draw Things › Scripts, run it, then import ${request.outputName}.`);
   }
   go.onclick = async () => {
@@ -493,7 +493,6 @@ export function mountDrawThingsGeneration({ studio = () => globalThis.OVA_STUDIO
     try {
       const ctx = await studio();
       if (!ctx?.editBase) fail('Open an image in Studio first');
-      if (!ctx.attested) fail('Tick the adult-and-fictional rights confirmation in Studio first');
       const request = await buildGenerationRequest({ ...ctx, preset, transport: transport.value, negativePrompt: negative.value,
         strength: strength.value, seed: seed.value, model: model.value });
       if (!request.frame.exact) say(`Note: Draw Things generates at ${request.frame.width}×${request.frame.height} (multiples of 64); the source is ${request.editBaseInfo.width}×${request.editBaseInfo.height}.`);

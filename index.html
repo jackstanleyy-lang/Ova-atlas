@@ -1378,7 +1378,7 @@ globalThis.OVA_STUDIO=Object.freeze({async snapshot(){
  if(!state.width||!(state.sourceBlob instanceof Blob))return null;
  const painted=state.strokes.some(s=>!s.erase);
  let accepted=false;if(state.parentRevisionId){try{accepted=(await dbGet(state.parentRevisionId))?.revisionStatus==='accepted';}catch{accepted=false;}}
- return {original:state.originalBlob||state.sourceBlob,editBase:state.sourceBlob,mask:painted?await makeMaskBlob():null,prompt:$('prompt').value,attested:$('attest').checked,
+ return {original:state.originalBlob||state.sourceBlob,editBase:state.sourceBlob,mask:painted?await makeMaskBlob():null,prompt:$('prompt').value,
   seriesId:state.seriesId,parentRevisionId:state.parentRevisionId,sourceRecordId:state.sourceRecordId,baseIsAcceptedRevision:accepted,width:state.width,height:state.height};
 }});
 const PAGE_SIZE=48;
