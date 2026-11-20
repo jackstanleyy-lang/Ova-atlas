@@ -1,4 +1,4 @@
-/* OVA ATLAS app shell v8.8.3. Only static same-origin app files are cached. */
+/* OVA ATLAS app shell v8.8.5. Only static same-origin app files are cached. */
 'use strict';
 const CACHE_NAME = 'ova-atlas-shell-v8.8.5';
 const SHELL_ASSETS = [
