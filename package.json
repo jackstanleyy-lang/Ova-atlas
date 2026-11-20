@@ -4,7 +4,7 @@
   "private": true,
   "description": "Development-only verification. The static app has no runtime dependencies.",
   "scripts": {
-    "test": "node --test tests/atlas-integrity.test.mjs tests/collection-backup.integration.mjs tests/drawthings-import.test.mjs"
+    "test": "node --test tests/atlas-integrity.test.mjs tests/collection-backup.integration.mjs tests/drawthings-import.test.mjs tests/drawthings-generation.test.mjs"
   },
   "devDependencies": {
     "fake-indexeddb": "6.2.8",

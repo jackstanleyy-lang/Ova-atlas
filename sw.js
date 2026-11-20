@@ -1,8 +1,8 @@
-/* OVA ATLAS app shell v8.8.5. Only static same-origin app files are cached. */
+/* OVA ATLAS app shell v8.9.0. Only static same-origin app files are cached. */
 'use strict';
-const CACHE_NAME = 'ova-atlas-shell-v8.8.5';
+const CACHE_NAME = 'ova-atlas-shell-v8.9.0';
 const SHELL_ASSETS = [
-  './drawthings_local_import.mjs',
+  './drawthings_generation.mjs', './drawthings_local_import.mjs',
   './index.html', './manifest.webmanifest',
   './icons/atlas-180.png', './icons/atlas-192.png', './icons/atlas-512.png'
 ];

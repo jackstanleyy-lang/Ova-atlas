@@ -13,8 +13,10 @@ const sw=readFileSync(join(root,'sw.js'),'utf8');
 const manifest=JSON.parse(readFileSync(join(root,'manifest.webmanifest'),'utf8'));
 const scriptTags=[...html.matchAll(/<script(\s[^>]*)?>([\s\S]*?)<\/script>/gi)].filter(m=>!m[0].includes('type="application/json"'));
 const scripts=scriptTags.filter(m=>!/\ssrc\s*=/i.test(m[1]||'')).map(m=>m[2]);
-// The only approved non-inline script: the same-origin, local-only Draw Things importer module.
+// The only approved non-inline scripts: the same-origin, local-only Draw Things importer
+// module (RC8) and the Draw Things generation module (RC9), in that order.
 const IMPORTER='./drawthings_local_import.mjs';
+const GENERATOR='./drawthings_generation.mjs';
 const pureScript=scripts.find(s=>s.includes('root.OVA_LOCAL_PREVIEW'));
 
 test('app is self-contained, static, and syntactically valid',()=>{
@@ -24,8 +26,9 @@ test('app is self-contained, static, and syntactically valid',()=>{
   new vm.Script(sw,{filename:'sw.js'});
   // Exactly one script may load from a file, and it must be the approved same-origin local module.
   const srcTags=[...html.matchAll(/<script\b[^>]*\bsrc\s*=[^>]*>/gi)].map(m=>m[0]);
-  assert.deepEqual(srcTags,[`<script type="module" src="${IMPORTER}">`],'only the local importer module may use a script src');
-  assert.match(html,new RegExp(`<script type="module" src="${IMPORTER.replace(/[.\/]/g,'\\$&')}"></script></body>`),'importer tag is empty and loads last');
+  assert.deepEqual(srcTags,[`<script type="module" src="${IMPORTER}">`,`<script type="module" src="${GENERATOR}">`],'only the two local Draw Things modules may use a script src');
+  const esc=p=>p.replace(/[.\/]/g,'\\$&');
+  assert.match(html,new RegExp(`<script type="module" src="${esc(IMPORTER)}"></script><script type="module" src="${esc(GENERATOR)}"></script></body>`),'module tags are empty and load last');
   assert.doesNotMatch(html,/<script[^>]+src\s*=\s*["']?(?:[a-z][a-z0-9+.-]*:|\/\/|\/)/i,'no remote, protocol-relative or root-absolute scripts');
   const importerPath=join(root,IMPORTER);
   assert.ok(existsSync(importerPath),'approved importer module exists in the repository');
@@ -33,6 +36,18 @@ test('app is self-contained, static, and syntactically valid',()=>{
   const importer=readFileSync(importerPath,'utf8');
   assert.doesNotMatch(importer,/^\s*import\b|\bimport\s*\(/m,'importer pulls in no further modules');
   assert.doesNotMatch(importer,/\bfetch\s*\(|XMLHttpRequest|WebSocket|EventSource|sendBeacon|https?:\/\/|\beval\s*\(|new Function/,'importer has no network or dynamic-code path');
+  // The generation module may make exactly one network call: the optional HTTP transport,
+  // whose base URL is validated as loopback-only before any request is built.
+  const generatorPath=join(root,GENERATOR);
+  assert.ok(existsSync(generatorPath),'approved generation module exists in the repository');
+  execFileSync(process.execPath,['--check',generatorPath],{stdio:'pipe'});
+  const generator=readFileSync(generatorPath,'utf8');
+  assert.doesNotMatch(generator,/^\s*import\b|\bimport\s*\(/m,'generation module pulls in no further modules');
+  assert.doesNotMatch(generator,/XMLHttpRequest|WebSocket|EventSource|sendBeacon|\beval\s*\(|new Function|localStorage|document\.cookie/,'generation module has no other network or dynamic-code path');
+  assert.equal((generator.match(/\bfetch\w*\s*\(/g)||[]).length,1,'exactly one fetch call site');
+  assert.deepEqual([...new Set(generator.match(/https?:\/\/[^\s'"`)]*/g))].sort(),['http://127.0.0.1:7861','http://127.0.0.1:port'],'only loopback URLs appear in the generation module');
+  assert.match(generator,/if \(!LOOPBACK\.test\(origin\)\) fail\(/,'HTTP transport refuses non-loopback targets');
+  assert.ok(generator.indexOf('if (!LOOPBACK.test(origin))')<generator.indexOf('await fetchImpl('),'loopback check happens before the request');
   assert.doesNotMatch(html,/<link[^>]+href=["']https?:/i,'no external styles/assets');
   assert.ok(existsSync(join(root,'.nojekyll')));
   assert.match(html,/data-free-only="true"/i);
@@ -94,9 +109,9 @@ test('service worker caches only the named app shell and never intercepts user d
   vm.runInNewContext(sw,{self:worker,caches,URL,fetch:async()=>({ok:true,clone(){return this;}})});
   let installation;handlers.install({waitUntil(p){installation=p;}});await installation;
   assert.deepEqual([...cacheRows.keys()].sort(),[
-    'drawthings_local_import.mjs','icons/atlas-180.png','icons/atlas-192.png','icons/atlas-512.png','index.html','manifest.webmanifest'
-  ].map(p=>scope+p),'exactly the six named shell assets are cached');
-  for(const p of ['./index.html','./manifest.webmanifest','./icons/atlas-180.png','./icons/atlas-192.png','./icons/atlas-512.png',IMPORTER])
+    'drawthings_generation.mjs','drawthings_local_import.mjs','icons/atlas-180.png','icons/atlas-192.png','icons/atlas-512.png','index.html','manifest.webmanifest'
+  ].map(p=>scope+p),'exactly the seven named shell assets are cached');
+  for(const p of ['./index.html','./manifest.webmanifest','./icons/atlas-180.png','./icons/atlas-192.png','./icons/atlas-512.png',IMPORTER,GENERATOR])
     assert.ok(existsSync(join(root,p)),`cached shell asset ${p} exists`);
   let activation;handlers.activate({waitUntil(p){activation=p;}});await activation;
   assert.deepEqual(removed,['ova-atlas-shell-v8.4','ova-atlas-shell-v8.5','ova-atlas-shell-v8.6','ova-atlas-shell-v8.7']);
@@ -115,11 +130,18 @@ test('service worker caches only the named app shell and never intercepts user d
     ['https://example.org/Ova-atlas/project.sqlite3',{}],
     ['https://example.org/Ova-atlas/drawthings_local_import.mjs?v=2',{}],
     ['https://cdn.example/drawthings_local_import.mjs',{}],
-    ['https://example.org/Ova-atlas/drawthings_local_import.mjs',{method:'POST'}]
+    ['https://example.org/Ova-atlas/drawthings_local_import.mjs',{method:'POST'}],
+    ['https://example.org/Ova-atlas/drawthings_generation.mjs?job=1',{}],
+    ['https://example.org/Ova-atlas/tools/drawthings_http_bridge.mjs',{}],
+    ['https://example.org/Ova-atlas/OVA-Atlas-20261120-0011223344556677.js',{}],
+    ['https://example.org/Ova-atlas/ova-atlas-20261120-0011223344556677.png',{}],
+    ['http://127.0.0.1:7861/sdapi/v1/img2img',{method:'POST'}],
+    ['http://127.0.0.1:7860/sdapi/v1/img2img',{}]
   ])assert.equal(fire(url,opts).responded,false,`must not intercept ${url}`);
   assert.equal(fire(`${scope}index.html`,{mode:'navigate'}).responded,true);
   assert.equal(fire(`${scope}icons/atlas-192.png`).responded,true);
   assert.equal(fire(`${scope}drawthings_local_import.mjs`).responded,true);
+  assert.equal(fire(`${scope}drawthings_generation.mjs`).responded,true);
   const before=cacheRows.size;await fire(`${scope}drawthings_local_import.mjs`).promise;
   assert.equal(cacheRows.size,before,'serving the module adds no runtime cache entries');
 });
