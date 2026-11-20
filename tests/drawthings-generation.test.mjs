@@ -247,3 +247,26 @@ test('MOCK bridge: forwards only to local Draw Things, only for the Atlas origin
     assert.equal((await fetch(`${base}/sdapi/v1/txt2img`,{method:'POST',headers:{Origin:'https://jackstanleyy-lang.github.io'},body:'{}'})).status,404);
   }finally{bridge.close();upstream.close();}
 });
+
+test('local Draw Things generation needs no confirmation checkbox; the locked cloud button still does',async()=>{
+  const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
+  // The legacy paid/cloud path keeps every gate: server unlock, free-only lock, prompt and the checkbox.
+  assert.match(html,/\$\('generate'\)\.disabled=!\(cloudAllowed && ready && \$\('prompt'\)\.value\.trim\(\) && \$\('attest'\)\.checked\)/);
+  assert.match(html,/if \(!cloudAllowed \|\| FREE_ONLY\) \{ toast\('Cloud generation is locked/);
+  assert.match(html,/data-free-only="true"/i);
+  const generator=readFileSync(new URL('../drawthings_generation.mjs',import.meta.url),'utf8');
+  assert.doesNotMatch(generator,/attest/i,'local generation does not read the checkbox');
+  const factory=new IDBFactory(),dbOpen=()=>openDB(factory);
+  const dom=new JSDOM('<!doctype html><body><div id="resume-panel"></div></body>',{url:'https://example.test/Ova-atlas/'});
+  globalThis.document=dom.window.document;
+  try{
+    // MOCK Studio context with no checkbox field at all: the script hand-off still proceeds.
+    assert.equal(mountDrawThingsGeneration({studio:async()=>ctx(),dbOpen}),true);
+    const d=dom.window.document;d.getElementById('rc9-generate').click();
+    const status=()=>d.getElementById('rc9-status').textContent;
+    for(let i=0;i<200&&!/Script (downloaded|shared)/.test(status());i++)await new Promise(r=>setTimeout(r,5));
+    assert.match(status(),/Script downloaded/);
+    const [job]=await listPendingJobs({dbOpen});assert.equal(job.status,'sent');assert.equal(job.preset,'FIX');
+    assert.equal((await all(factory)).length,0,'nothing enters Collection until a verified result is imported');
+  }finally{delete globalThis.document;dom.window.close();}
+});
