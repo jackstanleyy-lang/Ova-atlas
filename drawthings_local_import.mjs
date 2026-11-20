@@ -7,6 +7,8 @@
 const MAX_DB = 128 * 1024 * 1024;
 const MAX_ENTRY = 32 * 1024 * 1024;
 const LIMIT_ROWS = 10000;
+/** Explicit Collection status; only a person can later accept or reject it in the viewer. */
+export const QA_HOLD = 'QA HOLD';
 const REQUIRED_STORES = ['images', 'pending', 'drafts', 'archive', 'privateCatalog'];
 const utf8 = new TextDecoder('utf-8', {fatal: true});
 const fail = message => { throw Error(`Draw Things project: ${message}`); };
@@ -26,7 +28,7 @@ class SQLiteImageReader {
   constructor(input) {
     this.b=bufferize(input);
     if(this.b.byteLength<512||this.b.byteLength>MAX_DB)fail('file size unsupported');
-    if(utf8.decode(this.b.subarray(0,15))!=='SQLite format 3'||this.b[15]!==0)
+    if(String.fromCharCode(...this.b.subarray(0,15))!=='SQLite format 3'||this.b[15]!==0)
       fail('not a SQLite 3 database');
     this.view=new DataView(this.b.buffer,this.b.byteOffset,this.b.byteLength);
     const n=this.u16(16);this.pageSize=n===1?65536:n;
@@ -34,7 +36,7 @@ class SQLiteImageReader {
       fail('invalid SQLite page size');
     this.usable=this.pageSize-this.b[20];
     if(this.usable<480)fail('unsupported SQLite reserved space');
-    if(this.b[18]!==1||this.b[19]!==1)fail('WAL/journal-dependent database not supported; export a complete project');
+    if(this.b[18]!==1||this.b[19]!==1)fail('WAL/journal-dependent database not supported; close the project in Draw Things, then export the complete .sqlite3 file');
     if(this.u32(56)!==1)fail('only UTF-8 SQLite databases are supported');
     this.pageCount=this.b.length/this.pageSize;
     const declared=this.u32(28);
@@ -180,51 +182,75 @@ class HistoryFields {
     this.check(p,4);const rel=this.v.getUint32(p,true),target=p+rel;
     this.check(target,4);const n=this.v.getUint32(target,true);
     if(n>300000)fail('text metadata too long');this.check(target+4,n);
-    return utf8.decode(this.b.subarray(target+4,target+4+n));
+    try{return utf8.decode(this.b.subarray(target+4,target+4+n));}catch{fail('malformed UTF-8 metadata');}
   }
 }
+const finite = (v,digits) => typeof v==='number'&&Number.isFinite(v)?(digits===undefined?v:+v.toFixed(digits)):null;
+const isoTime = us => {
+  if(!Number.isFinite(us)||!us)return null;
+  const d=new Date(Math.round(us/1000));return Number.isFinite(d.getTime())?d.toISOString():null;
+};
 const generation = bytes => {
   const f=new HistoryFields(bytes);const ts=f.num(11,'i64');
   const sec=f.num(107,'f64'),strength=f.num(7,'f32'),guidance=f.num(6,'f32');
   return {historySequence:f.num(1,'i64'),modelFilename:f.str(8),seed:f.num(4,'u32'),steps:f.num(5,'u32'),
-    guidanceScale:guidance===null?null:+guidance.toFixed(5),
-    rawStoredStrength:strength===null?null:+strength.toFixed(6),
+    guidanceScale:finite(guidance,5),
+    rawStoredStrength:finite(strength,6),
     effectiveUiStrength:null,samplerEnum:f.num(15,'u8'),seedModeEnum:f.num(25,'u8'),
     previewId:f.num(41,'i64'),reasonEnum:f.num(108,'i32'),
-    timestampUTC:ts?new Date(Math.round(ts/1000)).toISOString():null,
-    generationSeconds:sec===null?null:+sec.toFixed(3),prompt:f.str(98),negativePrompt:f.str(99)};
+    timestampUTC:isoTime(ts),
+    generationSeconds:finite(sec,3),prompt:f.str(98),negativePrompt:f.str(99)};
 };
+const SOF_MARKERS = new Set([192,193,194,195,197,198,199,201,202,203,205,206,207]);
 const extractJPEG = wrapper => {
-  let start=-1,end=-1;
+  let start=-1;
   for(let i=0;i<wrapper.length-2;i++)if(wrapper[i]===255&&wrapper[i+1]===216&&wrapper[i+2]===255){start=i;break;}
   if(start<0)fail('embedded preview is not JPEG');
-  for(let i=start+3;i<wrapper.length-1;i++)if(wrapper[i]===255&&wrapper[i+1]===217){end=i+2;break;}
-  if(end<0)fail('truncated embedded JPEG');
-  const data=wrapper.slice(start,end);
-  // Simple JPEG frame header parser; never trust the dimensions stored elsewhere.
-  let pos=2,width=0,height=0;
-  while(pos<data.length){
-    if(data[pos++]!==255)break;
-    let marker;do{marker=data[pos++];}while(marker===255&&pos<data.length);
-    if(marker===217||marker===218)break;
+  // Walk the marker segments by their declared lengths so that an EXIF/APP
+  // segment carrying its own thumbnail JPEG (with its own FFD9) is skipped
+  // whole. Frame dimensions come only from the main SOF header, never from
+  // metadata stored elsewhere.
+  let pos=start+2,width=0,height=0,sos=-1;
+  while(pos<wrapper.length){
+    if(wrapper[pos]!==255)fail('malformed JPEG marker structure');
+    let marker;do{marker=wrapper[++pos];}while(marker===255&&pos<wrapper.length);
+    pos++;
+    if(marker===undefined)break;
+    if(marker===216||marker===217)fail('malformed JPEG marker structure');
     if(marker===1||(marker>=208&&marker<=215))continue;
-    if(pos+2>data.length)break;
-    const n=(data[pos]<<8)|data[pos+1];
-    if(n<2||pos+n>data.length)break;
-    if([192,193,194,195,198,199,201,202].includes(marker)&&n>=7){
-      height=(data[pos+3]<<8)|data[pos+4];width=(data[pos+5]<<8)|data[pos+6];break;
+    if(pos+2>wrapper.length)fail('truncated embedded JPEG');
+    const n=(wrapper[pos]<<8)|wrapper[pos+1];
+    if(n<2||pos+n>wrapper.length)fail('truncated embedded JPEG');
+    if(SOF_MARKERS.has(marker)){
+      if(n<8||width)fail('malformed JPEG frame header');
+      height=(wrapper[pos+3]<<8)|wrapper[pos+4];width=(wrapper[pos+5]<<8)|wrapper[pos+6];
     }
     pos+=n;
+    if(marker===218){sos=pos;break;}
   }
+  if(sos<0||!width)fail('JPEG frame header missing');
   if(width<16||height<16||width>16000||height>16000)fail('bad JPEG dimensions');
-  return {data,width,height};
+  // Entropy-coded data stuffs every 0xFF as FF00, so the first FFD9 after the
+  // first scan header is the real end of image (progressive scans included).
+  let end=-1;
+  for(let i=sos;i<wrapper.length-1;i++)if(wrapper[i]===255&&wrapper[i+1]===217){end=i+2;break;}
+  if(end<0)fail('truncated embedded JPEG');
+  return {data:wrapper.slice(start,end),width,height};
 };
 
 /** Read an exported Draw Things SQLite file completely in the browser, without uploading it. */
 export async function parseLocalDrawThingsProject(input){
   const bytes=bufferize(input),db=new SQLiteImageReader(bytes);
-  const thumb=new Map(db.table('thumbnailhistorynode').map(r=>[r.values[1],r.values[2]]));
-  const rows=db.table('tensorhistorynode').sort((a,b)=>a.values[1]-b.values[1]||a.values[2]-b.values[2]||a.rowid-b.rowid);
+  const thumbRows=db.table('thumbnailhistorynode'),thumb=new Map();
+  for(const r of thumbRows){
+    if(!Number.isSafeInteger(r.values[1]))fail('malformed thumbnail history row');
+    if(thumb.has(r.values[1]))fail('duplicate thumbnail history id');
+    thumb.set(r.values[1],r.values[2]);
+  }
+  const tensorRows=db.table('tensorhistorynode');
+  if(tensorRows.some(r=>!Number.isSafeInteger(r.values[1])||!Number.isSafeInteger(r.values[2])))
+    fail('malformed tensor history row');
+  const rows=tensorRows.sort((a,b)=>a.values[1]-b.values[1]||a.values[2]-b.values[2]||a.rowid-b.rowid);
   const projectSha256=await hash(bytes);
   const entries=[],warnings=[];
   for(const row of rows){
@@ -278,7 +304,10 @@ const txAdd = (db,rows) => new Promise((resolve,reject)=>{
   tx.onerror=()=>reject(tx.error||Error('Atlas Collection write failed'));
   tx.onabort=()=>reject(tx.error||Error('Atlas Collection write aborted'));
   tx.oncomplete=()=>resolve();
-  for(const row of rows)tx.objectStore('images').add(row);
+  // A synchronous throw (quota, clone or key error) must abort the whole
+  // transaction, otherwise records already queued would still commit.
+  try{for(const row of rows)tx.objectStore('images').add(row);}
+  catch(error){try{tx.abort();}catch{}reject(error);}
 });
 const verifyRow=async(row,expected,sourceHash)=>{
   if(!row||row.sha256!==expected||!(row.blob instanceof Blob)||!(row.original instanceof Blob)||!(row.base instanceof Blob))
@@ -309,7 +338,7 @@ export async function saveLocalDrawThingsCandidate({project,result,seriesId='W00
   const outRow={id:resultId,created:now+1,sha256:result.sha256,
     name:`${seriesId} — Draw Things generation (QA HOLD · REPAIR)`,seriesId,
     blob:result.blob,original:source.blob,base:source.blob,
-    sourceRecordId:srcId,parentRevisionId:srcId,revisionStatus:'candidate',reviewDecision:'repair',
+    sourceRecordId:srcId,parentRevisionId:srcId,revisionStatus:QA_HOLD,reviewDecision:'repair',
     qualityHold:true,tags:{},prompt:result.metadata?.prompt||'',
     originEngine:'Draw Things',originProjectSha256:project.projectSha256,
     originHistoryRow:result.rowid,sourceSha256:source.sha256,
@@ -356,7 +385,7 @@ export async function verifyLocalDrawThingsCandidate({project,result,seriesId='W
     const stored=rows.get(resultId);
     if(stored.sourceRecordId!==srcId||stored.parentRevisionId!==srcId||
        stored.qualityHold!==true||stored.reviewDecision!=='repair'||
-       stored.revisionStatus!=='candidate'||stored.sourceSha256!==source.sha256)
+       stored.revisionStatus!==QA_HOLD||stored.sourceSha256!==source.sha256)
       fail('restored Collection lost W001 lineage, QA hold or Repair review');
     return {verified:true,sourceId:srcId,resultId,sourceSha256:source.sha256,
       resultSha256:result.sha256,qualityHold:true,reviewDecision:'repair'};
@@ -382,6 +411,7 @@ export function mountLocalDrawThingsImporter(){
     if(!file.files?.length){status.textContent='Select a Draw Things project file first';return;}
     scan.disabled=true;results.replaceChildren();status.textContent='Reading the exported project entirely on this device…';
     try{
+      if(file.files[0].size>MAX_DB)throw Error('Draw Things project: file exceeds the 128 MiB import limit');
       const project=await parseLocalDrawThingsProject(await file.files[0].arrayBuffer());
       const candidates=project.entries.filter(x=>x.role==='result');
       status.textContent=`Found ${project.entries.length} history frames; ${candidates.length} generated candidates. No pixels uploaded.`;
